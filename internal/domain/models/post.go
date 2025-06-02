@@ -1,0 +1,15 @@
+package models
+
+import "time"
+
+type Post struct {
+	ID         string // UUID
+	User       User   // Embedded or reference SessionID
+	Title      string
+	Content    string
+	ImageKey   *string // S3 object key (nullable)
+	BucketName *string // S3 bucket (nullable)
+	CreatedAt  time.Time
+	IsArchived bool
+	ArchivedAt *time.Time
+}
