@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Post struct {
 	ID         string // UUID
@@ -12,4 +15,11 @@ type Post struct {
 	CreatedAt  time.Time
 	IsArchived bool
 	ArchivedAt *time.Time
+}
+
+func (p *Post) Validate() error {
+	if len(p.Title) < 5 {
+		return errors.New("title too short")
+	}
+	return nil
 }
