@@ -34,46 +34,34 @@ func (r *PostRepository) Save(ctx context.Context, post *models.Post) error {
 	}
 	defer tx.Rollback()
 
-	// Handle NULL values for S3 fields
+	query := `
+        INSERT INTO posts (
+            session_id, title, content, 
+            image_key, bucket_name
+        ) VALUES ($1, $2, $3, $4, $5)
+        RETURNING post_id, created_at, updated_at
+    `
+
 	var imageKey, bucketName sql.NullString
 	if post.ImageKey != nil {
 		imageKey = sql.NullString{String: *post.ImageKey, Valid: true}
-		bucketName = sql.NullString{
-			String: r.getBucketName(post.BucketName),
-			Valid:  true,
-		}
+		bucketName = sql.NullString{String: r.getBucketName(post.BucketName), Valid: true}
 	}
 
-	query := `
-		INSERT INTO posts (
-			session_id, title, content, 
-			image_key, bucket_name,
-			created_at, updated_at, is_archived, archived_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		ON CONFLICT (post_id) DO UPDATE SET
-			title = EXCLUDED.title,
-			content = EXCLUDED.content,
-			image_key = EXCLUDED.image_key,
-			bucket_name = EXCLUDED.bucket_name,
-			updated_at = EXCLUDED.updated_at,
-			is_archived = EXCLUDED.is_archived,
-			archived_at = EXCLUDED.archived_at
-	`
-
-	_, err = tx.ExecContext(ctx, query,
+	err = tx.QueryRowContext(ctx, query,
 		post.User.SessionID,
 		post.Title,
 		post.Content,
 		imageKey,
 		bucketName,
-		post.CreatedAt,
-		post.UpdatedAt,
-		post.IsArchived,
-		sqlNullTime(post.ArchivedAt),
+	).Scan(
+		&post.ID,        // Populate the generated UUID
+		&post.CreatedAt, // Get actual DB timestamp
+		&post.UpdatedAt, // Get actual DB timestamp
 	)
 
 	if err != nil {
-		return repositories.ErrUserNotFound
+		return err
 	}
 
 	return tx.Commit()
