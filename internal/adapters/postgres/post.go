@@ -11,7 +11,7 @@ import (
 
 type PostRepository struct {
 	db            *sql.DB
-	defaultBucket string // Your main S3 bucket name
+	defaultBucket string
 }
 
 var _ repositories.PostRepository = (*PostRepository)(nil)
@@ -28,14 +28,13 @@ func (r *PostRepository) Save(ctx context.Context, post *models.Post) error {
 		return err
 	}
 
-	// Use transaction for atomic operations
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	// Handle image reference
+	// Handle NULL values for S3 fields
 	var imageKey, bucketName sql.NullString
 	if post.ImageKey != nil {
 		imageKey = sql.NullString{String: *post.ImageKey, Valid: true}
@@ -47,83 +46,69 @@ func (r *PostRepository) Save(ctx context.Context, post *models.Post) error {
 
 	query := `
 		INSERT INTO posts (
-			id, user_id, title, content, 
-			image_key, bucket_name, 
-			created_at, is_archived, archived_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		ON CONFLICT (id) DO UPDATE SET
+			session_id, title, content, 
+			image_key, bucket_name,
+			created_at, updated_at, is_archived, archived_at
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		ON CONFLICT (post_id) DO UPDATE SET
 			title = EXCLUDED.title,
 			content = EXCLUDED.content,
 			image_key = EXCLUDED.image_key,
 			bucket_name = EXCLUDED.bucket_name,
+			updated_at = EXCLUDED.updated_at,
 			is_archived = EXCLUDED.is_archived,
 			archived_at = EXCLUDED.archived_at
 	`
+
 	_, err = tx.ExecContext(ctx, query,
-		post.ID,
-		post.User.ID,
+		post.User.SessionID,
 		post.Title,
 		post.Content,
 		imageKey,
 		bucketName,
 		post.CreatedAt,
+		post.UpdatedAt,
 		post.IsArchived,
 		sqlNullTime(post.ArchivedAt),
 	)
 
 	if err != nil {
-		return err
+		return repositories.ErrUserNotFound
 	}
 
 	return tx.Commit()
 }
 
-// Helper to safely handle nil bucket names
-func (r *PostRepository) getBucketName(bucket *string) string {
-	if bucket != nil {
-		return *bucket
-	}
-	return r.defaultBucket
-}
-
-// Helper for nullable time fields
-func sqlNullTime(t *time.Time) sql.NullTime {
-	if t == nil {
-		return sql.NullTime{Valid: false}
-	}
-	return sql.NullTime{Time: *t, Valid: true}
-}
-
 func (r *PostRepository) FindByID(ctx context.Context, id string) (*models.Post, error) {
 	query := `
 		SELECT 
-			p.id, p.title, p.content, 
+			p.post_id, p.title, p.content,
 			p.image_key, p.bucket_name,
-			p.created_at, p.is_archived, p.archived_at,
-			u.id, u.session_id, u.display_name, u.avatar_url
+			p.created_at, p.updated_at, p.is_archived, p.archived_at,
+			u.session_id, u.avatar_url, 
+			COALESCE(u.custom_name, u.character_name) as display_name
 		FROM posts p
-		JOIN users u ON p.user_id = u.id
-		WHERE p.id = $1
+		JOIN user_sessions u ON p.session_id = u.session_id
+		WHERE p.post_id = $1 AND p.is_archived = FALSE
 	`
-	row := r.db.QueryRowContext(ctx, query, id)
 
 	var post models.Post
 	var imageKey, bucketName sql.NullString
 	var archivedAt sql.NullTime
 
-	err := row.Scan(
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&post.ID,
 		&post.Title,
 		&post.Content,
 		&imageKey,
 		&bucketName,
 		&post.CreatedAt,
+		&post.UpdatedAt,
 		&post.IsArchived,
 		&archivedAt,
-		&post.User.ID,
 		&post.User.SessionID,
-		&post.User.DisplayName,
 		&post.User.AvatarURL,
+		&post.User.CharacterName,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -146,26 +131,73 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*models.Post,
 
 func (r *PostRepository) FindActive(ctx context.Context) ([]*models.Post, error) {
 	query := `
-		SELECT p.id, p.title, p.content, p.image_url, p.created_at, p.updated_at,
-		       u.id, u.display_name, u.avatar_url
+		SELECT 
+			p.post_id, p.title, p.content,
+			p.image_key, p.bucket_name,
+			p.created_at, p.updated_at,
+			u.session_id, u.avatar_url,
+			COALESCE(u.custom_name, u.character_name) as display_name
 		FROM posts p
-		JOIN users u ON p.user_id = u.id
-		WHERE p.archived = false
-		ORDER BY p.updated_at DESC
+		JOIN user_sessions u ON p.session_id = u.session_id
+		WHERE p.is_archived = FALSE
+		ORDER BY p.created_at DESC
 	`
-	// Implementation similar to FindByID but with rows.Next()
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*models.Post
+	for rows.Next() {
+		var post models.Post
+		var imageKey, bucketName sql.NullString
+
+		err := rows.Scan(
+			&post.ID,
+			&post.Title,
+			&post.Content,
+			&imageKey,
+			&bucketName,
+			&post.CreatedAt,
+			&post.UpdatedAt,
+			&post.User.SessionID,
+			&post.User.AvatarURL,
+			&post.User.CharacterName,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if imageKey.Valid {
+			post.ImageKey = &imageKey.String
+			post.BucketName = &bucketName.String
+		}
+
+		posts = append(posts, &post)
+	}
+
+	return posts, nil
 }
 
 func (r *PostRepository) ArchiveOldPosts(ctx context.Context) error {
-	query := `
-		UPDATE posts
-		SET archived = true
-		WHERE updated_at < NOW() - INTERVAL '15 minutes'
-		AND id NOT IN (
-			SELECT DISTINCT post_id FROM comments
-			WHERE created_at > NOW() - INTERVAL '15 minutes'
-		)
-	`
-	_, err := r.db.ExecContext(ctx, query)
+	// Use the database function we defined in init.sql
+	_, err := r.db.ExecContext(ctx, "SELECT archive_old_posts()")
 	return err
+}
+
+// Helper functions
+func (r *PostRepository) getBucketName(bucket *string) string {
+	if bucket != nil {
+		return *bucket
+	}
+	return r.defaultBucket
+}
+
+func sqlNullTime(t *time.Time) sql.NullTime {
+	if t == nil {
+		return sql.NullTime{Valid: false}
+	}
+	return sql.NullTime{Time: *t, Valid: true}
 }

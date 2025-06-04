@@ -13,6 +13,7 @@ type Post struct {
 	ImageKey   *string // S3 object key (nullable)
 	BucketName *string // S3 bucket (nullable)
 	CreatedAt  time.Time
+	UpdatedAt  time.Time
 	IsArchived bool
 	ArchivedAt *time.Time
 }
