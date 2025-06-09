@@ -1,8 +1,7 @@
 package postgres
 
 import (
-	"1337b04rd/internal/domain/models"
-	"1337b04rd/internal/ports/repositories"
+	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
 	"errors"
@@ -14,7 +13,7 @@ type PostRepository struct {
 	defaultBucket string
 }
 
-var _ repositories.PostRepository = (*PostRepository)(nil)
+var _ domain.PostRepository = (*PostRepository)(nil)
 
 func NewPostRepository(db *sql.DB, defaultBucket string) *PostRepository {
 	return &PostRepository{
@@ -23,7 +22,7 @@ func NewPostRepository(db *sql.DB, defaultBucket string) *PostRepository {
 	}
 }
 
-func (r *PostRepository) Save(ctx context.Context, post *models.Post) error {
+func (r *PostRepository) Save(ctx context.Context, post *domain.Post) error {
 	if err := post.Validate(); err != nil {
 		return err
 	}
@@ -67,7 +66,7 @@ func (r *PostRepository) Save(ctx context.Context, post *models.Post) error {
 	return tx.Commit()
 }
 
-func (r *PostRepository) FindByID(ctx context.Context, id string) (*models.Post, error) {
+func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post, error) {
 	query := `
 		SELECT 
 			p.post_id, p.title, p.content,
@@ -80,7 +79,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*models.Post,
 		WHERE p.post_id = $1 AND p.is_archived = FALSE
 	`
 
-	var post models.Post
+	var post domain.Post
 	var imageKey, bucketName sql.NullString
 	var archivedAt sql.NullTime
 
@@ -100,7 +99,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*models.Post,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repositories.ErrPostNotFound
+			return nil, err
 		}
 		return nil, err
 	}
@@ -117,7 +116,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*models.Post,
 	return &post, nil
 }
 
-func (r *PostRepository) FindActive(ctx context.Context) ([]*models.Post, error) {
+func (r *PostRepository) FindActive(ctx context.Context) ([]*domain.Post, error) {
 	query := `
 		SELECT 
 			p.post_id, p.title, p.content,
@@ -137,9 +136,9 @@ func (r *PostRepository) FindActive(ctx context.Context) ([]*models.Post, error)
 	}
 	defer rows.Close()
 
-	var posts []*models.Post
+	var posts []*domain.Post
 	for rows.Next() {
-		var post models.Post
+		var post domain.Post
 		var imageKey, bucketName sql.NullString
 
 		err := rows.Scan(

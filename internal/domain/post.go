@@ -1,6 +1,7 @@
-package models
+package domain
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -16,6 +17,13 @@ type Post struct {
 	UpdatedAt  time.Time
 	IsArchived bool
 	ArchivedAt *time.Time
+}
+
+type PostRepository interface {
+	Save(ctx context.Context, post *Post) error
+	FindByID(ctx context.Context, id string) (*Post, error)
+	FindActive(ctx context.Context) ([]*Post, error)
+	ArchiveOldPosts(ctx context.Context) error
 }
 
 func (p *Post) Validate() error {
