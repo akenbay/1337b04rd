@@ -1,9 +1,8 @@
 package services
 
 import (
-	"context"
-
 	"1337b04rd/internal/domain"
+	"context"
 )
 
 type PostService struct {
@@ -19,4 +18,20 @@ func (s *PostService) CreatePost(ctx context.Context, post *domain.Post) error {
 		return err
 	}
 	return s.postRepo.Save(ctx, post)
+}
+
+func (s *PostService) GetPostByID(ctx context.Context, id string) (*domain.Post, error) {
+	return s.postRepo.FindByID(ctx, id)
+}
+
+func (s *PostService) GetActivePosts(ctx context.Context) ([]*domain.Post, error) {
+	return s.postRepo.FindActive(ctx)
+}
+
+func (s *PostService) GetArchivedPosts(ctx context.Context) ([]*domain.Post, error) {
+	return s.postRepo.FindArchived(ctx)
+}
+
+func (s *PostService) ArchivePosts(ctx context.Context) error {
+	return s.postRepo.ArchiveOldPosts(ctx)
 }

@@ -23,6 +23,7 @@ type PostRepository interface {
 	Save(ctx context.Context, post *Post) error
 	FindByID(ctx context.Context, id string) (*Post, error)
 	FindActive(ctx context.Context) ([]*Post, error)
+	FindArchived(ctx context.Context) ([]*Post, error)
 	ArchiveOldPosts(ctx context.Context) error
 }
 

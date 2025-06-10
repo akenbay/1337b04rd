@@ -168,6 +168,58 @@ func (r *PostRepository) FindActive(ctx context.Context) ([]*domain.Post, error)
 	return posts, nil
 }
 
+func (r *PostRepository) FindArchived(ctx context.Context) ([]*domain.Post, error) {
+	query := `
+		SELECT 
+			p.post_id, p.title, p.content,
+			p.image_key, p.bucket_name,
+			p.created_at, p.updated_at,
+			u.session_id, u.avatar_url,
+			COALESCE(u.custom_name, u.character_name) as display_name
+		FROM posts p
+		JOIN user_sessions u ON p.session_id = u.session_id
+		WHERE p.is_archived = TRUE
+		ORDER BY p.created_at DESC
+	`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*domain.Post
+	for rows.Next() {
+		var post domain.Post
+		var imageKey, bucketName sql.NullString
+
+		err := rows.Scan(
+			&post.ID,
+			&post.Title,
+			&post.Content,
+			&imageKey,
+			&bucketName,
+			&post.CreatedAt,
+			&post.UpdatedAt,
+			&post.User.SessionID,
+			&post.User.AvatarURL,
+			&post.User.CharacterName,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if imageKey.Valid {
+			post.ImageKey = &imageKey.String
+			post.BucketName = &bucketName.String
+		}
+
+		posts = append(posts, &post)
+	}
+
+	return posts, nil
+}
+
 func (r *PostRepository) ArchiveOldPosts(ctx context.Context) error {
 	// Use the database function we defined in init.sql
 	_, err := r.db.ExecContext(ctx, "SELECT archive_old_posts()")
