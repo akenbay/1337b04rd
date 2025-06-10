@@ -10,8 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS user_sessions (
     session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     avatar_url TEXT NOT NULL,               -- URL from Rick and Morty API
-    character_name TEXT NOT NULL,           -- Character name from API
-    custom_name TEXT,                       -- Optional user-provided name
+    username TEXT NOT NULL,           -- Character name from API
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() + INTERVAL '7 days'
 );

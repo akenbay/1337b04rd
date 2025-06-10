@@ -73,7 +73,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post,
 			p.image_key, p.bucket_name,
 			p.created_at, p.updated_at, p.is_archived, p.archived_at,
 			u.session_id, u.avatar_url, 
-			COALESCE(u.custom_name, u.character_name) as display_name
+			u.username
 		FROM posts p
 		JOIN user_sessions u ON p.session_id = u.session_id
 		WHERE p.post_id = $1 AND p.is_archived = FALSE
@@ -95,7 +95,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post,
 		&archivedAt,
 		&post.User.SessionID,
 		&post.User.AvatarURL,
-		&post.User.CharacterName,
+		&post.User.Username,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -123,7 +123,7 @@ func (r *PostRepository) FindActive(ctx context.Context) ([]*domain.Post, error)
 			p.image_key, p.bucket_name,
 			p.created_at, p.updated_at,
 			u.session_id, u.avatar_url,
-			COALESCE(u.custom_name, u.character_name) as display_name
+			u.username
 		FROM posts p
 		JOIN user_sessions u ON p.session_id = u.session_id
 		WHERE p.is_archived = FALSE
@@ -151,7 +151,7 @@ func (r *PostRepository) FindActive(ctx context.Context) ([]*domain.Post, error)
 			&post.UpdatedAt,
 			&post.User.SessionID,
 			&post.User.AvatarURL,
-			&post.User.CharacterName,
+			&post.User.Username,
 		)
 		if err != nil {
 			return nil, err
@@ -175,7 +175,7 @@ func (r *PostRepository) FindArchived(ctx context.Context) ([]*domain.Post, erro
 			p.image_key, p.bucket_name,
 			p.created_at, p.updated_at,
 			u.session_id, u.avatar_url,
-			COALESCE(u.custom_name, u.character_name) as display_name
+			u.username
 		FROM posts p
 		JOIN user_sessions u ON p.session_id = u.session_id
 		WHERE p.is_archived = TRUE
@@ -203,7 +203,7 @@ func (r *PostRepository) FindArchived(ctx context.Context) ([]*domain.Post, erro
 			&post.UpdatedAt,
 			&post.User.SessionID,
 			&post.User.AvatarURL,
-			&post.User.CharacterName,
+			&post.User.Username,
 		)
 		if err != nil {
 			return nil, err
