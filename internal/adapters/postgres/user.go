@@ -18,7 +18,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Save(ctx context.Context, user *domain.User) error {
+func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -32,9 +32,11 @@ func (r *UserRepository) Save(ctx context.Context, user *domain.User) error {
         RETURNING session_id
     `
 
+	var user domain.User
+
 	err = tx.QueryRowContext(ctx, query,
-		user.AvatarURL,
-		user.Username,
+		avatarURL,
+		name,
 	).Scan(
 		&user.SessionID, // Populate the generated UUID
 	)
@@ -83,4 +85,14 @@ func (r *UserRepository) ChangeName(ctx context.Context, newName string, session
 	}
 
 	return tx.Commit()
+}
+
+func (r *UserRepository) GetNumberOfUsers(ctx context.Context) (int, error) {
+	var count int
+	err := r.db.QueryRow("SELECT COUNT(*) FROM your_table").Scan(&count)
+	if err != nil {
+		return -1, err
+	}
+
+	return count, nil
 }

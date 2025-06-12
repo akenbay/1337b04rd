@@ -15,5 +15,6 @@ type User struct {
 
 type UserRepository interface {
 	ChangeName(ctx context.Context, newName string, sessionID string) error
-	Save(ctx context.Context, user *User) error
+	Save(ctx context.Context, avatarURL string, name string) error
+	GetNumberOfUsers(ctx context.Context) (int, error)
 }
