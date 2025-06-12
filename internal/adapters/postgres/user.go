@@ -18,10 +18,10 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string) error {
+func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string) (string, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer tx.Rollback()
 
@@ -42,10 +42,10 @@ func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string
 	)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return tx.Commit()
+	return user.SessionID, tx.Commit()
 }
 
 func (r *UserRepository) ChangeName(ctx context.Context, newName string, sessionID string) error {

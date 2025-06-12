@@ -16,15 +16,15 @@ func NewUserService(userRepo domain.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) Save(ctx context.Context) error {
+func (s *UserService) CreateUserAndGetID(ctx context.Context) (string, error) {
 	count, err := s.userRepo.GetNumberOfUsers(ctx)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	userOutlook, err := s.userOutlookAPI.GenerateAvatarAndName(count)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	return s.userRepo.Save(ctx, userOutlook.AvatarURL, userOutlook.Name)
