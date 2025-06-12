@@ -6,18 +6,33 @@ import (
 )
 
 type PostService struct {
-	postRepo domain.PostRepository
+	postRepo     domain.PostRepository
+	imageStorage domain.ImageStorageAPI
 }
 
-func NewPostService(postRepo domain.PostRepository) *PostService {
-	return &PostService{postRepo: postRepo}
+func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageStorageAPI) *PostService {
+	return &PostService{
+		postRepo:     postRepo,
+		imageStorage: imageStorage,
+	}
 }
 
-func (s *PostService) CreatePost(ctx context.Context, post *domain.Post) error {
+func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.CreatePostReq) error {
+	image_key, err := s.imageStorage.Store(createPostReq.ImageData)
+	if err != nil {
+		return err
+	}
+
+	var post domain.Post
+
+	post.Title = createPostReq.Title
+	post.Content = createPostReq.Content
+
 	if err := post.Validate(); err != nil {
 		return err
 	}
-	return s.postRepo.Save(ctx, post)
+
+	return s.postRepo.Save(ctx, &post)
 }
 
 func (s *PostService) GetPostByID(ctx context.Context, id string) (*domain.Post, error) {

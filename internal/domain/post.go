@@ -19,6 +19,13 @@ type Post struct {
 	ArchivedAt *time.Time
 }
 
+type CreatePostReq struct {
+	SessionID string
+	Title     string
+	Content   string
+	ImageData []byte
+}
+
 type PostRepository interface {
 	Save(ctx context.Context, post *Post) error
 	FindByID(ctx context.Context, id string) (*Post, error)
