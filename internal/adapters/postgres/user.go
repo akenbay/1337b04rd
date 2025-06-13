@@ -96,3 +96,30 @@ func (r *UserRepository) GetNumberOfUsers(ctx context.Context) (int, error) {
 
 	return count, nil
 }
+
+func (r *UserRepository) FindByID(ctx context.Context, id int) (*domain.User, error) {
+	query := `SELECT 
+	session_id,
+	avatar_url,
+    username,
+    created_at,
+    expires_at 
+	FROM user_sessions
+	WHERE session_id=$1
+	`
+
+	var user domain.User
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&user.SessionID,
+		&user.AvatarURL,
+		&user.Username,
+		&user.CreatedAt,
+		&user.ExpiresAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

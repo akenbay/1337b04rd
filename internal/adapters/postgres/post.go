@@ -76,7 +76,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post,
 			u.username
 		FROM posts p
 		JOIN user_sessions u ON p.session_id = u.session_id
-		WHERE p.post_id = $1 AND p.is_archived = FALSE
+		WHERE p.post_id = $1
 	`
 
 	var post domain.Post
