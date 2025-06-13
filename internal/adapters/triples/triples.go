@@ -38,9 +38,9 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPut, apiReq, bytes.NewBuffer(jsonData))
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -48,9 +48,11 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer resp.Body.Close()
+
+	return image_key, nil
 }
 
 // GenerateRandomToken creates a secure URL-safe token
