@@ -1,5 +1,5 @@
 package domain
 
 type ImageStorageAPI interface {
-	Store(imageData []byte) (string, error)
+	Store(imageData []byte, bucketName string) (string, error)
 }

@@ -6,8 +6,10 @@ import (
 )
 
 type PostService struct {
-	postRepo     domain.PostRepository
-	imageStorage domain.ImageStorageAPI
+	postRepo      domain.PostRepository
+	userService   UserService
+	imageStorage  domain.ImageStorageAPI
+	defaultBucket string
 }
 
 func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageStorageAPI) *PostService {
@@ -18,15 +20,28 @@ func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageSto
 }
 
 func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.CreatePostReq) error {
-	image_key, err := s.imageStorage.Store(createPostReq.ImageData)
+	var post domain.Post
+
+	if createPostReq.ImageData == nil {
+	}
+
+	image_key, err := s.imageStorage.Store(createPostReq.ImageData, s.defaultBucket)
 	if err != nil {
 		return err
 	}
 
-	var post domain.Post
-
 	post.Title = createPostReq.Title
 	post.Content = createPostReq.Content
+	post.ImageKey = &image_key
+	post.BucketName = &s.defaultBucket
+	sessionID := createPostReq.SessionID
+
+	user, err := s.userService.FindUserByID(ctx, sessionID)
+	if err != nil {
+		return err
+	}
+
+	post.User = *user
 
 	if err := post.Validate(); err != nil {
 		return err

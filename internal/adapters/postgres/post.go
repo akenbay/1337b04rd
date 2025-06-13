@@ -9,16 +9,14 @@ import (
 )
 
 type PostRepository struct {
-	db            *sql.DB
-	defaultBucket string
+	db *sql.DB
 }
 
 var _ domain.PostRepository = (*PostRepository)(nil)
 
 func NewPostRepository(db *sql.DB, defaultBucket string) *PostRepository {
 	return &PostRepository{
-		db:            db,
-		defaultBucket: defaultBucket,
+		db: db,
 	}
 }
 
@@ -44,7 +42,7 @@ func (r *PostRepository) Save(ctx context.Context, post *domain.Post) error {
 	var imageKey, bucketName sql.NullString
 	if post.ImageKey != nil {
 		imageKey = sql.NullString{String: *post.ImageKey, Valid: true}
-		bucketName = sql.NullString{String: r.getBucketName(post.BucketName), Valid: true}
+		bucketName = sql.NullString{String: *post.BucketName, Valid: true}
 	}
 
 	err = tx.QueryRowContext(ctx, query,
@@ -224,14 +222,6 @@ func (r *PostRepository) ArchiveOldPosts(ctx context.Context) error {
 	// Use the database function we defined in init.sql
 	_, err := r.db.ExecContext(ctx, "SELECT archive_old_posts()")
 	return err
-}
-
-// Helper functions
-func (r *PostRepository) getBucketName(bucket *string) string {
-	if bucket != nil {
-		return *bucket
-	}
-	return r.defaultBucket
 }
 
 func sqlNullTime(t *time.Time) sql.NullTime {
