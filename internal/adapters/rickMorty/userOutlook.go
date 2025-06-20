@@ -4,7 +4,7 @@ import (
 	"1337b04rd/internal/domain"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ type RickMortyAPI struct{}
 
 var _ domain.UserOutlookAPI = (*RickMortyAPI)(nil)
 
-func newRickMortyAPI() *RickMortyAPI {
+func NewRickMortyAPI() *RickMortyAPI {
 	return &RickMortyAPI{}
 }
 
@@ -24,7 +24,7 @@ func (r *RickMortyAPI) GenerateAvatarAndName(id int) (*domain.UserOutlook, error
 	}
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
