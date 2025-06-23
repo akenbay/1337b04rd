@@ -223,3 +223,24 @@ func (h *PostHandlers) ListActivePosts(w http.ResponseWriter, r *http.Request) {
 		"Posts": posts,
 	})
 }
+
+func (h *PostHandlers) ListArchivedPosts(w http.ResponseWriter, r *http.Request) {
+	posts, err := h.postService.GetArchivedPosts(r.Context())
+	if err != nil {
+		if r.Header.Get("Accept") == "application/json" {
+			respondError(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		h.renderError(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if r.Header.Get("Accept") == "application/json" {
+		respondJSON(w, posts, http.StatusOK)
+		return
+	}
+
+	h.renderTemplate(w, "catalog.html", map[string]interface{}{
+		"Posts": posts,
+	})
+}
