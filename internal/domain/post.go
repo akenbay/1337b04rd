@@ -27,7 +27,7 @@ type CreatePostReq struct {
 }
 
 type PostRepository interface {
-	Save(ctx context.Context, post *Post) error
+	Save(ctx context.Context, post *Post) (string, error)
 	FindByID(ctx context.Context, id string) (*Post, error)
 	FindActive(ctx context.Context) ([]*Post, error)
 	FindArchived(ctx context.Context) ([]*Post, error)
