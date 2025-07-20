@@ -7,7 +7,7 @@ import (
 )
 
 type Post struct {
-	ID         string // UUID
+	ID         string // UUID which generates in SQL itself
 	User       User   // Embedded or reference SessionID
 	Title      string
 	Content    string
@@ -19,12 +19,16 @@ type Post struct {
 	ArchivedAt *time.Time
 }
 
+// Structure for creating post request
+
 type CreatePostReq struct {
 	SessionID string
 	Title     string
 	Content   string
 	ImageData []byte
 }
+
+// Description of the functions that manipulate the database
 
 type PostRepository interface {
 	Save(ctx context.Context, post *Post) (string, error)
@@ -33,6 +37,8 @@ type PostRepository interface {
 	FindArchived(ctx context.Context) ([]*Post, error)
 	ArchiveOldPosts(ctx context.Context) error
 }
+
+// Validation of title length
 
 func (p *Post) Validate() error {
 	if len(p.Title) < 5 {
