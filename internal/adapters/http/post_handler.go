@@ -7,10 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
-	"path/filepath"
 )
 
 type PostHandlers struct {
@@ -25,30 +23,10 @@ type ImageValidator interface {
 }
 
 func NewPostHandlers(postService services.PostService, validator ImageValidator, templateDir string) *PostHandlers {
-	templates := template.Must(template.ParseGlob(filepath.Join(templateDir, "*.html")))
 	return &PostHandlers{
 		postService:    postService,
 		imageValidator: validator,
-		templates:      templates,
 	}
-}
-
-// Render HTML Responses
-
-func (h *PostHandlers) renderTemplate(w http.ResponseWriter, name string, data interface{}) {
-	w.Header().Set("Content-Type", "text/html")
-	if err := h.templates.ExecuteTemplate(w, name, data); err != nil {
-		log.Printf("Template rendering error: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
-}
-
-func (h *PostHandlers) renderError(w http.ResponseWriter, message string, status int) {
-	w.WriteHeader(status)
-	h.renderTemplate(w, "error.html", map[string]interface{}{
-		"Error":  message,
-		"Status": status,
-	})
 }
 
 // JSON Response Helpers
@@ -63,79 +41,6 @@ func respondJSON(w http.ResponseWriter, data interface{}, status int) {
 
 func respondError(w http.ResponseWriter, message string, status int) {
 	respondJSON(w, map[string]string{"error": message}, status)
-}
-
-// Handlers
-
-func (h *PostHandlers) CreatePost(w http.ResponseWriter, r *http.Request) {
-	// Handle both form and JSON input
-	if r.Header.Get("Content-Type") == "application/json" {
-		h.createPostAPI(w, r)
-		return
-	}
-
-	// HTML form handling
-	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB max
-		h.renderError(w, "File too large", http.StatusBadRequest)
-		return
-	}
-
-	title := r.FormValue("title")
-	content := r.FormValue("content")
-	if len(title) < 5 || len(content) < 1 {
-		h.renderError(w, "Title (min 5 chars) and content required", http.StatusBadRequest)
-		return
-	}
-
-	// Process image upload
-	var imageData []byte
-	if file, header, err := r.FormFile("image"); err == nil {
-		defer file.Close()
-
-		// Basic checks
-		if header.Size > 10<<20 { // 10MB
-			h.renderError(w, "Image too large", http.StatusBadRequest)
-			return
-		}
-
-		contentType := header.Header.Get("Content-Type")
-		switch contentType {
-		case "image/jpeg", "image/png":
-			// Allowed types
-		default:
-			h.renderError(w, "Only JPEG/PNG allowed", http.StatusBadRequest)
-			return
-		}
-
-		imageData, err = io.ReadAll(file)
-		if err != nil {
-			h.renderError(w, "Failed to read image", http.StatusBadRequest)
-			return
-		}
-
-		if err := h.imageValidator.Validate(imageData); err != nil {
-			h.renderError(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	} else {
-		log.Printf("Post creation failed: %v", err)
-		h.renderError(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	id, err := h.postService.CreatePost(r.Context(), &domain.CreatePostReq{
-		Title:     title,
-		Content:   content,
-		ImageData: imageData,
-	})
-	if err != nil {
-		log.Printf("Post creation failed: %v", err)
-		h.renderError(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	// Redirect to the new post
-	http.Redirect(w, r, "/posts/"+id, http.StatusSeeOther)
 }
 
 func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
@@ -184,23 +89,15 @@ func (h *PostHandlers) GetPost(w http.ResponseWriter, r *http.Request) {
 	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			h.renderError(w, "Post not found", http.StatusNotFound)
+			respondError(w, "Post not found", http.StatusNotFound)
 			return
 		}
-		h.renderError(w, "Internal server error", http.StatusInternalServerError)
+		respondError(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	// Check Accept header for response format
-	if r.Header.Get("Accept") == "application/json" {
-		respondJSON(w, post, http.StatusOK)
-		return
-	}
-
-	h.renderTemplate(w, "post.html", map[string]interface{}{
-		"Post": post,
-		// Additional template data
-	})
+	respondJSON(w, post, http.StatusOK)
+	return
 }
 
 func (h *PostHandlers) ListActivePosts(w http.ResponseWriter, r *http.Request) {
@@ -210,18 +107,12 @@ func (h *PostHandlers) ListActivePosts(w http.ResponseWriter, r *http.Request) {
 			respondError(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		h.renderError(w, "Internal server error", http.StatusInternalServerError)
+		respondError(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if r.Header.Get("Accept") == "application/json" {
-		respondJSON(w, posts, http.StatusOK)
-		return
-	}
-
-	h.renderTemplate(w, "catalog.html", map[string]interface{}{
-		"Posts": posts,
-	})
+	respondJSON(w, posts, http.StatusOK)
+	return
 }
 
 func (h *PostHandlers) ListArchivedPosts(w http.ResponseWriter, r *http.Request) {
@@ -231,16 +122,10 @@ func (h *PostHandlers) ListArchivedPosts(w http.ResponseWriter, r *http.Request)
 			respondError(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		h.renderError(w, "Internal server error", http.StatusInternalServerError)
+		respondError(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if r.Header.Get("Accept") == "application/json" {
-		respondJSON(w, posts, http.StatusOK)
-		return
-	}
-
-	h.renderTemplate(w, "catalog.html", map[string]interface{}{
-		"Posts": posts,
-	})
+	respondJSON(w, posts, http.StatusOK)
+	return
 }
