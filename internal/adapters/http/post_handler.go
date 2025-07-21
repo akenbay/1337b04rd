@@ -6,15 +6,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"html/template"
-	"log"
 	"net/http"
 )
 
 type PostHandlers struct {
 	postService    services.PostService
 	imageValidator ImageValidator
-	templates      *template.Template
 }
 
 type ImageValidator interface {
@@ -27,20 +24,6 @@ func NewPostHandlers(postService services.PostService, validator ImageValidator,
 		postService:    postService,
 		imageValidator: validator,
 	}
-}
-
-// JSON Response Helpers
-
-func respondJSON(w http.ResponseWriter, data interface{}, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		log.Printf("JSON encoding error: %v", err)
-	}
-}
-
-func respondError(w http.ResponseWriter, message string, status int) {
-	respondJSON(w, map[string]string{"error": message}, status)
 }
 
 func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +67,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, post, http.StatusCreated)
 }
 
-func (h *PostHandlers) GetPost(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandlers) GetPostApi(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("id")
 	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
@@ -100,7 +83,7 @@ func (h *PostHandlers) GetPost(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (h *PostHandlers) ListActivePosts(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandlers) GetActivePostsApi(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.postService.GetActivePosts(r.Context())
 	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {
@@ -115,7 +98,7 @@ func (h *PostHandlers) ListActivePosts(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (h *PostHandlers) ListArchivedPosts(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandlers) GetArchivedPostsApi(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.postService.GetArchivedPosts(r.Context())
 	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {
