@@ -16,14 +16,41 @@ func NewUserHandlers(userService services.UserService) *UserHandlers {
 }
 
 func (u *UserHandlers) GetSessionMe(w http.ResponseWriter, r *http.Request) {
-	ID, err := getSessionID(r)
+	sessionID, err := getSessionID(r)
 	if err != nil {
-		respondError(w, "Failed to retrieve the user session", http.StatusNotFound)
+		sessionID, err = u.createUser(r)
+		if err != nil {
+			respondError(w, "Failed to create new user session", http.StatusNotFound)
+			return
+		}
 	}
 
-	user, err := u.userService.FindUserByID(r.Context(), ID)
+	user, err := u.userService.FindUserByID(r.Context(), sessionID)
 	if err != nil {
-		respondError(w, "Failed to retrieve the user session", http.StatusNotFound)
+		sessionID, err = u.createUser(r)
+		if err != nil {
+			respondError(w, "Failed to create new user session", http.StatusNotFound)
+			return
+		}
+		setSessionID(w, sessionID)
+		user, err := u.userService.FindUserByID(r.Context(), sessionID)
+		if err != nil {
+			respondError(w, "Failed to retrieve the user session", http.StatusNotFound)
+			return
+		}
+		respondJSON(w, user, http.StatusOK)
+		return
 	}
 	respondJSON(w, user, http.StatusOK)
+}
+
+// Create new user and retrieve its ID in the database
+
+func (u *UserHandlers) createUser(r *http.Request) (string, error) {
+	sessionID, err := u.userService.CreateUserAndGetID(r.Context())
+	if err != nil {
+		return "", err
+	}
+
+	return sessionID, nil
 }

@@ -31,6 +31,8 @@ func getSessionID(r *http.Request) (string, error) {
 	return cookie.Value, nil
 }
 
+// Set session ID to the cookies
+
 func setSessionID(w http.ResponseWriter, sessionID string) {
 	cookie := &http.Cookie{
 		Name:     "session_id",
