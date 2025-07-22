@@ -19,7 +19,7 @@ type ImageValidator interface {
 	AllowedTypes() []string
 }
 
-func NewPostHandlers(postService services.PostService, validator ImageValidator, templateDir string) *PostHandlers {
+func newPostHandlers(postService services.PostService, validator ImageValidator) *PostHandlers {
 	return &PostHandlers{
 		postService:    postService,
 		imageValidator: validator,
@@ -67,7 +67,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, post, http.StatusCreated)
 }
 
-func (h *PostHandlers) GetPostApi(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandlers) getPostApi(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("id")
 	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
@@ -83,7 +83,7 @@ func (h *PostHandlers) GetPostApi(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (h *PostHandlers) GetActivePostsApi(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandlers) getActivePostsApi(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.postService.GetActivePosts(r.Context())
 	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {
@@ -98,7 +98,7 @@ func (h *PostHandlers) GetActivePostsApi(w http.ResponseWriter, r *http.Request)
 	return
 }
 
-func (h *PostHandlers) GetArchivedPostsApi(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandlers) getArchivedPostsApi(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.postService.GetArchivedPosts(r.Context())
 	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {

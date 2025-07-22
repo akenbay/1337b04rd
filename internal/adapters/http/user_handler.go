@@ -9,7 +9,7 @@ type UserHandlers struct {
 	userService services.UserService
 }
 
-func NewUserHandlers(userService services.UserService) *UserHandlers {
+func newUserHandlers(userService services.UserService) *UserHandlers {
 	return &UserHandlers{
 		userService: userService,
 	}
@@ -17,7 +17,7 @@ func NewUserHandlers(userService services.UserService) *UserHandlers {
 
 // Get the current user session, if it does not exists creating and retrieving the newly created one
 
-func (u *UserHandlers) GetSessionMe(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := getSessionID(r)
 	if err != nil {
 		sessionID, err = u.createUser(r)
