@@ -15,6 +15,8 @@ func NewUserHandlers(userService services.UserService) *UserHandlers {
 	}
 }
 
+// Get the current user session, if it does not exists creating and retrieving the newly created one
+
 func (u *UserHandlers) GetSessionMe(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := getSessionID(r)
 	if err != nil {
