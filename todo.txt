@@ -1,0 +1,1 @@
+1. I wanted to image validation to be in the service. So I need image validation to be in the services. How and where should I write structs and interfaces?
