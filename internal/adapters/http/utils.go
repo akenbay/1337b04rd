@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -26,6 +27,7 @@ func respondError(w http.ResponseWriter, message string, status int) {
 func getSessionID(r *http.Request) (string, error) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
+		slog.Error("Failed to get session_id from cookies", "error", err)
 		return "", err
 	}
 	return cookie.Value, nil

@@ -54,10 +54,17 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	sessionID, err := getSessionID(r)
+	if err != nil {
+		respondError(w, "Failed to get session id from cookies", http.StatusBadRequest)
+		return
+	}
+
 	post, err := h.postService.CreatePost(r.Context(), &domain.CreatePostReq{
 		Title:     req.Title,
 		Content:   req.Content,
 		ImageData: imageData,
+		SessionID: sessionID,
 	})
 	if err != nil {
 		respondError(w, "Internal server error", http.StatusInternalServerError)
