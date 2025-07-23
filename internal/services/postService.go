@@ -3,13 +3,15 @@ package services
 import (
 	"1337b04rd/internal/domain"
 	"context"
+	"log/slog"
 )
 
 type PostService struct {
-	postRepo      domain.PostRepository
-	userService   UserService
-	imageStorage  domain.ImageStorageAPI
-	defaultBucket string
+	postRepo       domain.PostRepository
+	userService    UserService
+	imageStorage   domain.ImageStorageAPI
+	imageValidator domain.ImageValidator
+	defaultBucket  string
 }
 
 func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageStorageAPI) *PostService {
@@ -21,6 +23,11 @@ func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageSto
 
 func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.CreatePostReq) (string, error) {
 	var post domain.Post
+
+	if err := s.imageValidator.Validate(createPostReq.ImageData); err != nil {
+		slog.Error("Failed to validate the image", "error", err)
+		return "", err
+	}
 
 	if createPostReq.ImageData != nil {
 		image_key, err := s.imageStorage.Store(createPostReq.ImageData, s.defaultBucket)
