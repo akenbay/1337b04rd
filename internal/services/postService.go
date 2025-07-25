@@ -14,10 +14,13 @@ type PostService struct {
 	defaultBucket  string
 }
 
-func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageStorageAPI) *PostService {
+func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageStorageAPI, imageValidator domain.ImageValidator, userService UserService, defaultBucket string) *PostService {
 	return &PostService{
-		postRepo:     postRepo,
-		imageStorage: imageStorage,
+		postRepo:       postRepo,
+		imageStorage:   imageStorage,
+		imageValidator: imageValidator,
+		userService:    userService,
+		defaultBucket:  defaultBucket,
 	}
 }
 

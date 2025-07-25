@@ -10,19 +10,12 @@ import (
 )
 
 type PostHandlers struct {
-	postService    services.PostService
-	imageValidator ImageValidator
+	postService services.PostService
 }
 
-type ImageValidator interface {
-	Validate(image []byte) error
-	AllowedTypes() []string
-}
-
-func newPostHandlers(postService services.PostService, validator ImageValidator) *PostHandlers {
+func newPostHandlers(postService services.PostService) *PostHandlers {
 	return &PostHandlers{
-		postService:    postService,
-		imageValidator: validator,
+		postService: postService,
 	}
 }
 
@@ -45,11 +38,6 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 		imageData, err = base64.StdEncoding.DecodeString(req.Image)
 		if err != nil {
 			respondError(w, "Invalid image encoding", http.StatusBadRequest)
-			return
-		}
-
-		if err := h.imageValidator.Validate(imageData); err != nil {
-			respondError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}

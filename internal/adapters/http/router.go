@@ -10,5 +10,9 @@ func NewRouter(userService services.UserService, postService services.PostServic
 	userHandler := newUserHandlers(userService)
 	postHandler := newPostHandlers(postService)
 
-	mux.HandleFunc("GET /session/me")
+	mux.HandleFunc("GET /session/me", userHandler.getSessionMe)
+	mux.HandleFunc("GET /threads", postHandler.getActivePostsApi)
+	mux.HandleFunc("GET /threads/archive", postHandler.getArchivedPostsApi)
+
+	return mux
 }
