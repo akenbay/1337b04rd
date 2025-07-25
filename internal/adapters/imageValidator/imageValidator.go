@@ -1,4 +1,4 @@
-package image_validator
+package imageValidator
 
 import (
 	"1337b04rd/internal/domain"
