@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"1337b04rd/internal/domain"
