@@ -13,6 +13,8 @@ func NewRouter(userService services.UserService, postService services.PostServic
 	mux.HandleFunc("GET /session/me", userHandler.getSessionMe)
 	mux.HandleFunc("GET /threads", postHandler.getActivePostsApi)
 	mux.HandleFunc("GET /threads/archive", postHandler.getArchivedPostsApi)
+	mux.HandleFunc("GET /threads/view/", postHandler.getPostApi)
+	mux.HandleFunc("POST /threads", postHandler.createPostAPI)
 
 	return mux
 }
