@@ -10,9 +10,10 @@ type UserService struct {
 	userOutlookAPI domain.UserOutlookAPI
 }
 
-func NewUserService(userRepo domain.UserRepository) *UserService {
+func NewUserService(userRepo domain.UserRepository, userOutlookAPI domain.UserOutlookAPI) *UserService {
 	return &UserService{
-		userRepo: userRepo,
+		userRepo:       userRepo,
+		userOutlookAPI: userOutlookAPI,
 	}
 }
 

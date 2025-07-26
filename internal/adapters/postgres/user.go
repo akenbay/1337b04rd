@@ -89,7 +89,7 @@ func (r *UserRepository) ChangeName(ctx context.Context, newName string, session
 
 func (r *UserRepository) GetNumberOfUsers(ctx context.Context) (int, error) {
 	var count int
-	err := r.db.QueryRow("SELECT COUNT(*) FROM your_table").Scan(&count)
+	err := r.db.QueryRow("SELECT COUNT(*) FROM user_sessions").Scan(&count)
 	if err != nil {
 		return -1, err
 	}

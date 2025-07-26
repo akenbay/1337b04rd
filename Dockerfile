@@ -5,14 +5,14 @@ FROM golang:1.22 AS builder
 WORKDIR /app
 
 # Копируем go.mod и устанавливаем зависимости (это ускоряет сборку)
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 # Копируем все исходники в контейнер
 COPY . .
 
 # Собираем бинарный файл
-RUN go build -o 1337b04rd ./cmd/main.go
+RUN go build -o 1337b04rd ./cmd/1337b04rd/main.go
 
 # Используем минимальный образ для финального контейнера
 FROM debian:bookworm-slim

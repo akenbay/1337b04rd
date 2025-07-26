@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"1337b04rd/internal/services"
+	"log/slog"
 	"net/http"
 )
 
@@ -25,6 +26,9 @@ func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 			respondError(w, "Failed to create new user session", http.StatusNotFound)
 			return
 		}
+		slog.Info("Successfuly created user")
+		setSessionID(w, sessionID)
+		slog.Info("Successfuly set session id")
 	}
 
 	user, err := u.userService.FindUserByID(r.Context(), sessionID)
@@ -34,6 +38,7 @@ func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 			respondError(w, "Failed to create new user session", http.StatusNotFound)
 			return
 		}
+		slog.Info("Successfuly created user")
 		setSessionID(w, sessionID)
 		user, err := u.userService.FindUserByID(r.Context(), sessionID)
 		if err != nil {
@@ -46,7 +51,7 @@ func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, user, http.StatusOK)
 }
 
-// Create new user and retrieve its ID in the database
+// Create new user and retrieve its ID from the database
 
 func (u *UserHandlers) createUser(r *http.Request) (string, error) {
 	sessionID, err := u.userService.CreateUserAndGetID(r.Context())

@@ -4,6 +4,7 @@ import (
 	"1337b04rd/internal/adapters/handlers"
 	"1337b04rd/internal/adapters/imageValidator"
 	"1337b04rd/internal/adapters/postgres"
+	"1337b04rd/internal/adapters/rickMorty"
 	"1337b04rd/internal/adapters/triples"
 	"1337b04rd/internal/services"
 	"context"
@@ -15,6 +16,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -26,11 +29,12 @@ func main() {
 
 	imageValidator := imageValidator.New([]string{"image/jpeg", "image/png"}, 5<<20)
 	imageStorage := triples.NewTriples("1337b04rd", 1414)
+	userOutlook := rickMorty.NewRickMortyAPI()
 
 	userRepo := postgres.NewUserRepository(db)
 	postRepo := postgres.NewPostRepository(db, "1337b04rd")
 
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, userOutlook)
 	postServices := services.NewPostService(postRepo, imageStorage, imageValidator, *userService, "1337b04rd")
 
 	router := handlers.NewRouter(*userService, *postServices)
@@ -38,7 +42,7 @@ func main() {
 	port := ":8080"
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%s", port),
+		Addr:         port,
 		Handler:      router,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
