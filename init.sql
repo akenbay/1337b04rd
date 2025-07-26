@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS comments (
     parent_id UUID REFERENCES comments(comment_id) ON DELETE CASCADE, -- For nested comments
     session_id UUID REFERENCES user_sessions(session_id) ON DELETE SET NULL,
     content TEXT NOT NULL,
+    image_key TEXT,                         -- S3 object key for the image
+    bucket_name TEXT,                       -- S3 bucket name
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
