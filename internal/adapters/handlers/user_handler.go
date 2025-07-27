@@ -21,9 +21,10 @@ func newUserHandlers(userService services.UserService) *UserHandlers {
 func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := getSessionID(r)
 	if err != nil {
+		slog.Info("blabla")
 		sessionID, err = u.createUser(r)
 		if err != nil {
-			respondError(w, "Failed to create new user session", http.StatusNotFound)
+			respondError(w, r, "Failed to create new user session", http.StatusNotFound)
 			return
 		}
 		slog.Info("Successfuly created user")
@@ -33,22 +34,24 @@ func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 
 	user, err := u.userService.FindUserByID(r.Context(), sessionID)
 	if err != nil {
+		slog.Info("Error when finding user")
 		sessionID, err = u.createUser(r)
 		if err != nil {
-			respondError(w, "Failed to create new user session", http.StatusNotFound)
+			respondError(w, r, "Failed to create new user session", http.StatusNotFound)
 			return
 		}
 		slog.Info("Successfuly created user")
 		setSessionID(w, sessionID)
 		user, err := u.userService.FindUserByID(r.Context(), sessionID)
 		if err != nil {
-			respondError(w, "Failed to retrieve the user session", http.StatusNotFound)
+			respondError(w, r, "Failed to retrieve the user session", http.StatusNotFound)
 			return
 		}
-		respondJSON(w, user, http.StatusOK)
+		respondJSON(w, r, user, http.StatusOK)
 		return
 	}
-	respondJSON(w, user, http.StatusOK)
+	slog.Info("Found user by session id")
+	respondJSON(w, r, user, http.StatusOK)
 }
 
 // Create new user and retrieve its ID from the database

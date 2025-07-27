@@ -27,7 +27,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, "Invalid request body", http.StatusBadRequest)
+		respondError(w, r, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
@@ -37,14 +37,14 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 		var err error
 		imageData, err = base64.StdEncoding.DecodeString(req.Image)
 		if err != nil {
-			respondError(w, "Invalid image encoding", http.StatusBadRequest)
+			respondError(w, r, "Invalid image encoding", http.StatusBadRequest)
 			return
 		}
 	}
 
 	sessionID, err := getSessionID(r)
 	if err != nil {
-		respondError(w, "Failed to get session id from cookies", http.StatusBadRequest)
+		respondError(w, r, "Failed to get session id from cookies", http.StatusBadRequest)
 		return
 	}
 
@@ -55,11 +55,11 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 		SessionID: sessionID,
 	})
 	if err != nil {
-		respondError(w, "Internal server error", http.StatusInternalServerError)
+		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, post, http.StatusCreated)
+	respondJSON(w, r, post, http.StatusCreated)
 }
 
 func (h *PostHandlers) getPostApi(w http.ResponseWriter, r *http.Request) {
@@ -68,14 +68,14 @@ func (h *PostHandlers) getPostApi(w http.ResponseWriter, r *http.Request) {
 	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			respondError(w, "Post not found", http.StatusNotFound)
+			respondError(w, r, "Post not found", http.StatusNotFound)
 			return
 		}
-		respondError(w, "Internal server error", http.StatusInternalServerError)
+		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, post, http.StatusOK)
+	respondJSON(w, r, post, http.StatusOK)
 	return
 }
 
@@ -83,14 +83,14 @@ func (h *PostHandlers) getActivePostsApi(w http.ResponseWriter, r *http.Request)
 	posts, err := h.postService.GetActivePosts(r.Context())
 	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {
-			respondError(w, "Internal server error", http.StatusInternalServerError)
+			respondError(w, r, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		respondError(w, "Internal server error", http.StatusInternalServerError)
+		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, posts, http.StatusOK)
+	respondJSON(w, r, posts, http.StatusOK)
 	return
 }
 
@@ -98,13 +98,13 @@ func (h *PostHandlers) getArchivedPostsApi(w http.ResponseWriter, r *http.Reques
 	posts, err := h.postService.GetArchivedPosts(r.Context())
 	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {
-			respondError(w, "Internal server error", http.StatusInternalServerError)
+			respondError(w, r, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		respondError(w, "Internal server error", http.StatusInternalServerError)
+		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, posts, http.StatusOK)
+	respondJSON(w, r, posts, http.StatusOK)
 	return
 }

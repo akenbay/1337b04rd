@@ -2,6 +2,7 @@ package rickMorty
 
 import (
 	"1337b04rd/internal/domain"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,7 +19,15 @@ func NewRickMortyAPI() *RickMortyAPI {
 
 func (r *RickMortyAPI) GenerateAvatarAndName(id int) (*domain.UserOutlook, error) {
 	apiReq := "https://rickandmortyapi.com/api/character/" + fmt.Sprint(id)
-	response, err := http.Get(apiReq)
+
+	// Create a custom transport with TLS config that skips verification
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	// Create an HTTP client with the custom transport
+	client := &http.Client{Transport: tr}
+	response, err := client.Get(apiReq)
 	if err != nil {
 		return nil, err
 	}

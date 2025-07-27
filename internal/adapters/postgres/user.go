@@ -4,6 +4,7 @@ import (
 	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
+	"log/slog"
 )
 
 type UserRepository struct {
@@ -19,6 +20,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string) (string, error) {
+	slog.Info("Save func")
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return "", err
@@ -34,12 +36,16 @@ func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string
 
 	var user domain.User
 
+	slog.Info("Created query and transaction")
+
 	err = tx.QueryRowContext(ctx, query,
 		avatarURL,
 		name,
 	).Scan(
 		&user.SessionID, // Populate the generated UUID
 	)
+
+	slog.Info("Pushed the query into the sql")
 
 	if err != nil {
 		return "", err

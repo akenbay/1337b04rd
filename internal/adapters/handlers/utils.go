@@ -10,16 +10,19 @@ import (
 
 // JSON Response Helpers
 
-func respondJSON(w http.ResponseWriter, data interface{}, status int) {
+func respondJSON(w http.ResponseWriter, r *http.Request, data interface{}, status int) {
+	origin := r.Header.Get("Origin")
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Printf("JSON encoding error: %v", err)
 	}
 }
 
-func respondError(w http.ResponseWriter, message string, status int) {
-	respondJSON(w, map[string]string{"error": message}, status)
+func respondError(w http.ResponseWriter, r *http.Request, message string, status int) {
+	respondJSON(w, r, map[string]string{"error": message}, status)
 }
 
 // Retrieve session ID from cookies
@@ -37,13 +40,10 @@ func getSessionID(r *http.Request) (string, error) {
 
 func setSessionID(w http.ResponseWriter, sessionID string) {
 	cookie := &http.Cookie{
-		Name:     "session_id",
-		Value:    sessionID,
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		Name:    "session_id",
+		Value:   sessionID,
+		Path:    "/",
+		Expires: time.Now().Add(24 * time.Hour),
 	}
 	http.SetCookie(w, cookie)
 }
