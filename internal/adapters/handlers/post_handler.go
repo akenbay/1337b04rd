@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 )
 
@@ -20,6 +21,8 @@ func newPostHandlers(postService services.PostService) *PostHandlers {
 }
 
 func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Creating post API:")
+
 	var req struct {
 		Title   string `json:"title"`
 		Content string `json:"content"`
@@ -31,6 +34,8 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("Successfully decoded request body")
+
 	// Process base64 image if provided
 	var imageData []byte
 	if req.Image != "" {
@@ -40,6 +45,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 			respondError(w, r, "Invalid image encoding", http.StatusBadRequest)
 			return
 		}
+		slog.Info("Decoded imagedata successfully")
 	}
 
 	sessionID, err := getSessionID(r)
@@ -64,7 +70,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 
 func (h *PostHandlers) getPostApi(w http.ResponseWriter, r *http.Request) {
 	// Extract the ID from the URL path
-	postID := r.URL.Path[len("/posts/"):] // Gets everything after "/posts/"
+	postID := r.URL.Path[len("/threads/"):] // Gets everything after "/posts/"
 	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
