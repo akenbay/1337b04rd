@@ -52,7 +52,7 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	return image_key, nil
+	return apiReq, nil
 }
 
 // GenerateRandomToken creates a secure URL-safe token
