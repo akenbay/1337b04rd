@@ -7,20 +7,20 @@ import (
 )
 
 type PostService struct {
-	postRepo       domain.PostRepository
-	userService    UserService
-	imageStorage   domain.ImageStorageAPI
-	imageValidator domain.ImageValidator
-	defaultBucket  string
+	postRepo      domain.PostRepository
+	userService   UserService
+	imageStorage  domain.ImageStorageAPI
+	fileUtils     domain.FileUtils
+	defaultBucket string
 }
 
-func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageStorageAPI, imageValidator domain.ImageValidator, userService UserService, defaultBucket string) *PostService {
+func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageStorageAPI, fileUtils domain.FileUtils, userService UserService, defaultBucket string) *PostService {
 	return &PostService{
-		postRepo:       postRepo,
-		imageStorage:   imageStorage,
-		imageValidator: imageValidator,
-		userService:    userService,
-		defaultBucket:  defaultBucket,
+		postRepo:      postRepo,
+		imageStorage:  imageStorage,
+		fileUtils:     fileUtils,
+		userService:   userService,
+		defaultBucket: defaultBucket,
 	}
 }
 
@@ -28,12 +28,21 @@ func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.Crea
 	var post domain.Post
 
 	for _, fileheader := range createPostReq.ImageData {
-		if err := s.imageValidator.Validate(fileheader); err != nil {
+
+		// Validate if its image
+		if err := s.fileUtils.ValidateImage(fileheader); err != nil {
 			slog.Error("Failed to validate the image", "error", err)
 			return "", err
 		}
 
-		imageURL, err := s.imageStorage.Store(fileheader, s.defaultBucket)
+		// Convert into bytes
+		fileBytes, err := s.fileUtils.FileHeaderToBytes(fileheader)
+		if err != nil {
+			slog.Error("Failed to convert image into bytes.")
+			return "", err
+		}
+
+		imageURL, err := s.imageStorage.Store(fileBytes, s.defaultBucket)
 		if err != nil {
 			slog.Error("Failed to store the image", "error", err)
 			return "", err
@@ -43,7 +52,6 @@ func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.Crea
 
 	post.Title = createPostReq.Title
 	post.Content = createPostReq.Content
-	post.BucketName = &s.defaultBucket
 	sessionID := createPostReq.SessionID
 
 	user, err := s.userService.FindUserByID(ctx, sessionID)
