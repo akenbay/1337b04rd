@@ -6,6 +6,8 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type PostRepository struct {
@@ -34,23 +36,16 @@ func (r *PostRepository) Save(ctx context.Context, post *domain.Post) (string, e
 	query := `
         INSERT INTO posts (
             session_id, title, content, 
-            image_key, bucket_name
-        ) VALUES ($1, $2, $3, $4, $5)
+            image_urls
+        ) VALUES ($1, $2, $3, $4)
         RETURNING post_id, created_at, updated_at
     `
-
-	var imageKey, bucketName sql.NullString
-	if post.ImageKey != nil {
-		imageKey = sql.NullString{String: *post.ImageKey, Valid: true}
-		bucketName = sql.NullString{String: *post.BucketName, Valid: true}
-	}
 
 	err = tx.QueryRowContext(ctx, query,
 		post.User.SessionID,
 		post.Title,
 		post.Content,
-		imageKey,
-		bucketName,
+		pq.Array(post.ImageURLs),
 	).Scan(
 		&post.ID,        // Populate the generated UUID
 		&post.CreatedAt, // Get actual DB timestamp
@@ -68,7 +63,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post,
 	query := `
 		SELECT 
 			p.post_id, p.title, p.content,
-			p.image_key, p.bucket_name,
+			p.image_urls,
 			p.created_at, p.updated_at, p.is_archived, p.archived_at,
 			u.session_id, u.avatar_url, 
 			u.username
@@ -78,15 +73,14 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post,
 	`
 
 	var post domain.Post
-	var imageKey, bucketName sql.NullString
+	var imageURLs pq.StringArray
 	var archivedAt sql.NullTime
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&post.ID,
 		&post.Title,
 		&post.Content,
-		&imageKey,
-		&bucketName,
+		&imageURLs,
 		&post.CreatedAt,
 		&post.UpdatedAt,
 		&post.IsArchived,
@@ -103,13 +97,12 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post,
 	}
 
 	// Handle nullable fields
-	if imageKey.Valid {
-		post.ImageKey = &imageKey.String
-		post.BucketName = &bucketName.String
-	}
 	if archivedAt.Valid {
 		post.ArchivedAt = &archivedAt.Time
 	}
+
+	// Convert pq string array into massive
+	post.ImageURLs = []string(imageURLs)
 
 	return &post, nil
 }
@@ -118,7 +111,7 @@ func (r *PostRepository) FindActive(ctx context.Context) ([]*domain.Post, error)
 	query := `
 		SELECT 
 			p.post_id, p.title, p.content,
-			p.image_key, p.bucket_name,
+			p.image_urls,
 			p.created_at, p.updated_at,
 			u.session_id, u.avatar_url,
 			u.username
@@ -137,14 +130,13 @@ func (r *PostRepository) FindActive(ctx context.Context) ([]*domain.Post, error)
 	var posts []*domain.Post
 	for rows.Next() {
 		var post domain.Post
-		var imageKey, bucketName sql.NullString
+		var imageURLs pq.StringArray
 
 		err := rows.Scan(
 			&post.ID,
 			&post.Title,
 			&post.Content,
-			&imageKey,
-			&bucketName,
+			&imageURLs,
 			&post.CreatedAt,
 			&post.UpdatedAt,
 			&post.User.SessionID,
@@ -155,10 +147,7 @@ func (r *PostRepository) FindActive(ctx context.Context) ([]*domain.Post, error)
 			return nil, err
 		}
 
-		if imageKey.Valid {
-			post.ImageKey = &imageKey.String
-			post.BucketName = &bucketName.String
-		}
+		post.ImageURLs = []string(imageURLs)
 
 		posts = append(posts, &post)
 	}
@@ -170,7 +159,7 @@ func (r *PostRepository) FindArchived(ctx context.Context) ([]*domain.Post, erro
 	query := `
 		SELECT 
 			p.post_id, p.title, p.content,
-			p.image_key, p.bucket_name,
+			p.image_urls,
 			p.created_at, p.updated_at,
 			u.session_id, u.avatar_url,
 			u.username
@@ -189,14 +178,13 @@ func (r *PostRepository) FindArchived(ctx context.Context) ([]*domain.Post, erro
 	var posts []*domain.Post
 	for rows.Next() {
 		var post domain.Post
-		var imageKey, bucketName sql.NullString
+		var imageURLs pq.StringArray
 
 		err := rows.Scan(
 			&post.ID,
 			&post.Title,
 			&post.Content,
-			&imageKey,
-			&bucketName,
+			&imageURLs,
 			&post.CreatedAt,
 			&post.UpdatedAt,
 			&post.User.SessionID,
@@ -207,10 +195,7 @@ func (r *PostRepository) FindArchived(ctx context.Context) ([]*domain.Post, erro
 			return nil, err
 		}
 
-		if imageKey.Valid {
-			post.ImageKey = &imageKey.String
-			post.BucketName = &bucketName.String
-		}
+		post.ImageURLs = []string(imageURLs)
 
 		posts = append(posts, &post)
 	}
