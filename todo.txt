@@ -1,3 +1,2 @@
-1. Change the strcuts of the comments and posts from image key to just image url
-2. Change the function store and saving posts and comments so that it saves the url of the images
-3. Change the templates according to returning structs in handlers
+1. Fix the comments relying on new structure of posts
+2. Change the templates according to returning structs in handlers
