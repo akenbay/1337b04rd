@@ -27,22 +27,18 @@ func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageSto
 func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.CreatePostReq) (string, error) {
 	var post domain.Post
 
-	if err := s.imageValidator.Validate(createPostReq.ImageData); err != nil {
-		slog.Error("Failed to validate the image", "error", err)
-		return "", err
-	}
-
-	if createPostReq.ImageData != nil {
-		for _, fileheader := range createPostReq.ImageData {
-			imageURL, err := s.imageStorage.Store(fileheader, s.defaultBucket)
-			if err != nil {
-				slog.Error("Failed to store the image", "error", err)
-				return "", err
-			}
-			post.ImageURLs = append(post.ImageURLs, imageURL)
+	for _, fileheader := range createPostReq.ImageData {
+		if err := s.imageValidator.Validate(fileheader); err != nil {
+			slog.Error("Failed to validate the image", "error", err)
+			return "", err
 		}
-	} else {
-		post.ImageKey = nil
+
+		imageURL, err := s.imageStorage.Store(fileheader, s.defaultBucket)
+		if err != nil {
+			slog.Error("Failed to store the image", "error", err)
+			return "", err
+		}
+		post.ImageURLs = append(post.ImageURLs, imageURL)
 	}
 
 	post.Title = createPostReq.Title
