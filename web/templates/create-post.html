@@ -53,9 +53,10 @@
 					>
 					<input
 						type="file"
-						id="image"
-						name="image"
+						id="images"
+						name="images"
 						accept="image/*"
+						multiple
 						class="w-full p-2 bg-gray-700 rounded text-white"
 					/>
 				</div>
@@ -76,7 +77,13 @@
 					const formData = new FormData()
 					formData.append('title', document.getElementById('title').value)
 					formData.append('content', document.getElementById('content').value)
-					const imageFiles = document.getElementById('image').files
+					const imageFiles = document.getElementById('images').files
+
+					if (imageFiles.length > 5) {  // Example: Limit to 5 files
+						alert("Max 5 images allowed");
+						return;
+					}
+
 					for (let i = 0; i < imageFiles.length; i++) {
 						formData.append('image', imageFiles[i])
 					}

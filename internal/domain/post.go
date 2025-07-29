@@ -11,8 +11,7 @@ type Post struct {
 	User       User   // Embedded or reference SessionID
 	Title      string
 	Content    string
-	ImageKey   *string // S3 object key (nullable)
-	BucketName *string // S3 bucket (nullable)
+	ImageURLs  []string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	IsArchived bool
@@ -22,10 +21,10 @@ type Post struct {
 // Structure for creating post request
 
 type CreatePostReq struct {
-	SessionID string
-	Title     string
-	Content   string
-	ImageData []byte
+	SessionID  string
+	Title      string
+	Content    string
+	ImageDatas [][]byte
 }
 
 // Description of the functions that manipulate the database
