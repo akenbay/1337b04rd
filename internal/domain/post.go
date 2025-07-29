@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"errors"
+	"mime/multipart"
 	"time"
 )
 
@@ -21,10 +22,10 @@ type Post struct {
 // Structure for creating post request
 
 type CreatePostReq struct {
-	SessionID  string
-	Title      string
-	Content    string
-	ImageDatas [][]byte
+	SessionID string
+	Title     string
+	Content   string
+	ImageData []*multipart.FileHeader
 }
 
 // Description of the functions that manipulate the database

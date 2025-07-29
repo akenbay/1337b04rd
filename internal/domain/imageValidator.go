@@ -1,6 +1,7 @@
 package domain
 
+import "mime/multipart"
+
 type ImageValidator interface {
-	Validate(image []byte) error
-	AllowedTypes() []string
+	Validate(fileHeader *multipart.FileHeader) error
 }
