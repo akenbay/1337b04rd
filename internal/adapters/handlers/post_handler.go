@@ -3,8 +3,6 @@ package handlers
 import (
 	"1337b04rd/internal/domain"
 	"1337b04rd/internal/services"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -21,31 +19,12 @@ func newPostHandlers(postService services.PostService) *PostHandlers {
 }
 
 func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Creating post API:")
+	slog.Info("Creating post handler:")
 
-	var req struct {
-		Title   string `json:"title"`
-		Content string `json:"content"`
-		Image   string `json:"image"` // base64 encoded
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, r, "Invalid request body", http.StatusBadRequest)
+	err := r.ParseMultipartForm(10 << 20) // 10 MB
+	if err != nil {
+		respondError(w, r, "Failed to parse files, the size is too big", http.StatusBadRequest)
 		return
-	}
-
-	slog.Info("Successfully decoded request body")
-
-	// Process base64 image if provided
-	var imageData []byte
-	if req.Image != "" {
-		var err error
-		imageData, err = base64.StdEncoding.DecodeString(req.Image)
-		if err != nil {
-			respondError(w, r, "Invalid image encoding", http.StatusBadRequest)
-			return
-		}
-		slog.Info("Decoded imagedata successfully")
 	}
 
 	sessionID, err := getSessionID(r)
@@ -54,10 +33,15 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	title := r.FormValue("title")     // Works after ParseMultipartForm
+	content := r.FormValue("content") // Same here
+
+	files := r.MultipartForm.File["image"] // "image" matches formData.append('image', ...)
+
 	post, err := h.postService.CreatePost(r.Context(), &domain.CreatePostReq{
-		Title:     req.Title,
-		Content:   req.Content,
-		ImageData: imageData,
+		Title:     title,
+		Content:   content,
+		ImageData: files,
 		SessionID: sessionID,
 	})
 	if err != nil {
