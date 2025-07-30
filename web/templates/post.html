@@ -185,7 +185,7 @@
 						}
 						const imageFiles = document.getElementById('images').files
 						for (let i = 0; i < imageFiles.length; i++) {
-							formData.append('image', imageFiles[i])
+							formData.append('images', imageFiles[i])
 						}
 
 						const response = await fetch(

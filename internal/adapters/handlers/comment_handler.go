@@ -3,9 +3,8 @@ package handlers
 import (
 	"1337b04rd/internal/domain"
 	"1337b04rd/internal/services"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 )
 
@@ -20,26 +19,16 @@ func newCommentHandlers(commentService services.CommentService) *CommentHandlers
 }
 
 func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Content string `json:"content"`
-		Image   string `json:"image"` // base64 encoded
+	slog.Info("API creating comment:")
+
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		slog.Error("Could not parse images attached to comment:", "error", err)
+		respondError(w, r, "Failed to parse attached files (maximum size of files 10 MB)", http.StatusBadRequest)
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, r, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	// Process base64 image if provided
-	var imageData []byte
-	if req.Image != "" {
-		var err error
-		imageData, err = base64.StdEncoding.DecodeString(req.Image)
-		if err != nil {
-			respondError(w, r, "Invalid image encoding", http.StatusBadRequest)
-			return
-		}
-	}
+	content := r.FormValue("content")
+	files := r.MultipartForm.File["images"]
 
 	sessionID, err := getSessionID(r)
 	if err != nil {
@@ -48,8 +37,8 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 	}
 
 	comment, err := h.commentService.CreateComment(r.Context(), &domain.CreateCommentReq{
-		Content:   req.Content,
-		ImageData: imageData,
+		Content:   content,
+		ImageData: files,
 		SessionID: sessionID,
 	})
 	if err != nil {

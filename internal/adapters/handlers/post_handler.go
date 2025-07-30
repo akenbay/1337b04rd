@@ -36,7 +36,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 	title := r.FormValue("title")     // Works after ParseMultipartForm
 	content := r.FormValue("content") // Same here
 
-	files := r.MultipartForm.File["image"] // "image" matches formData.append('image', ...)
+	files := r.MultipartForm.File["images"]
 
 	post, err := h.postService.CreatePost(r.Context(), &domain.CreatePostReq{
 		Title:     title,
