@@ -35,6 +35,9 @@ func (s *UserService) CreateUserAndGetID(ctx context.Context) (string, error) {
 	return s.userRepo.Save(ctx, userOutlook.AvatarURL, userOutlook.Name)
 }
 
+func (s *UserService) ChangeUsername(ctx context.Context, session_id string, newUsername string) error {
+}
+
 func (s *UserService) FindUserByID(ctx context.Context, session_id string) (*domain.User, error) {
 	return s.userRepo.FindByID(ctx, session_id)
 }

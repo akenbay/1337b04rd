@@ -51,6 +51,7 @@ func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *do
 	}
 
 	comment.Content = createCommentReq.Content
+	comment.PostID = createCommentReq.PostID
 	sessionID := createCommentReq.SessionID
 
 	user, err := s.userService.FindUserByID(ctx, sessionID)

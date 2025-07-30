@@ -64,3 +64,6 @@ func (u *UserHandlers) createUser(r *http.Request) (string, error) {
 
 	return sessionID, nil
 }
+
+func (u *UserHandlers) ChangeUsername(w http.ResponseWriter, r *http.Request) {
+}

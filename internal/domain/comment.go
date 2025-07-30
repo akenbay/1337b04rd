@@ -18,6 +18,7 @@ type Comment struct {
 
 type CreateCommentReq struct {
 	SessionID string
+	PostID    string
 	Content   string
 	ImageData []*multipart.FileHeader
 }

@@ -28,6 +28,7 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 	}
 
 	content := r.FormValue("content")
+	postID := r.FormValue("thread_id")
 	files := r.MultipartForm.File["images"]
 
 	sessionID, err := getSessionID(r)
@@ -40,6 +41,7 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 		Content:   content,
 		ImageData: files,
 		SessionID: sessionID,
+		PostID:    postID,
 	})
 	if err != nil {
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
