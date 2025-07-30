@@ -32,12 +32,14 @@ func main() {
 	userOutlook := rickMorty.NewRickMortyAPI()
 
 	userRepo := postgres.NewUserRepository(db)
-	postRepo := postgres.NewPostRepository(db, "1337b04rd")
+	postRepo := postgres.NewPostRepository(db, "posts")
+	commentRepo := postgres.NewCommentRepository(db, "comments")
 
 	userService := services.NewUserService(userRepo, userOutlook)
-	postServices := services.NewPostService(postRepo, imageStorage, file_utils, *userService, "1337b04rd")
+	postServices := services.NewPostService(postRepo, imageStorage, file_utils, *userService, "posts")
+	commentServices := services.NewCommentService(commentRepo, *userService, imageStorage, file_utils, "comments")
 
-	router := handlers.NewRouter(*userService, *postServices)
+	router := handlers.NewRouter(*userService, *postServices, *commentServices)
 
 	port := ":8080"
 

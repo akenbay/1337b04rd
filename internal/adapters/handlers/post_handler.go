@@ -54,7 +54,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 
 func (h *PostHandlers) getPostApi(w http.ResponseWriter, r *http.Request) {
 	// Extract the ID from the URL path
-	postID := r.URL.Path[len("/threads/"):] // Gets everything after "/posts/"
+	postID := r.URL.Path[len("/threads/view/"):] // Gets id from url path
 	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {

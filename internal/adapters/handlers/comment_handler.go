@@ -51,7 +51,7 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 
 func (h *CommentHandlers) loadCommentsApi(w http.ResponseWriter, r *http.Request) {
 	// Extract the ID from the URL path
-	postID := r.PathValue("threadId")
+	postID := r.URL.Query().Get("thread_id")
 	comments, err := h.commentService.LoadComments(r.Context(), postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
@@ -65,33 +65,3 @@ func (h *CommentHandlers) loadCommentsApi(w http.ResponseWriter, r *http.Request
 	respondJSON(w, r, comments, http.StatusOK)
 	return
 }
-
-// func (h *PostHandlers) getActivePostsApi(w http.ResponseWriter, r *http.Request) {
-// 	posts, err := h.postService.GetActivePosts(r.Context())
-// 	if err != nil {
-// 		if r.Header.Get("Accept") == "application/json" {
-// 			respondError(w, r, "Internal server error", http.StatusInternalServerError)
-// 			return
-// 		}
-// 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	respondJSON(w, r, posts, http.StatusOK)
-// 	return
-// }
-
-// func (h *PostHandlers) getArchivedPostsApi(w http.ResponseWriter, r *http.Request) {
-// 	posts, err := h.postService.GetArchivedPosts(r.Context())
-// 	if err != nil {
-// 		if r.Header.Get("Accept") == "application/json" {
-// 			respondError(w, r, "Internal server error", http.StatusInternalServerError)
-// 			return
-// 		}
-// 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	respondJSON(w, r, posts, http.StatusOK)
-// 	return
-// }
