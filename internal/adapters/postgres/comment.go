@@ -4,6 +4,8 @@ import (
 	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
+
+	"github.com/lib/pq"
 )
 
 type CommentRepository struct {
@@ -28,23 +30,16 @@ func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (
 	query := `
         INSERT INTO comments (
             post_id, parent_id, content, 
-            image_key, bucket_name
-        ) VALUES ($1, $2, $3, $4, $5)
+            image_urls
+        ) VALUES ($1, $2, $3, $4)
         RETURNING comment_id, created_at
     `
-
-	var imageKey, bucketName sql.NullString
-	if comment.ImageKey != nil {
-		imageKey = sql.NullString{String: *comment.ImageKey, Valid: true}
-		bucketName = sql.NullString{String: *comment.BucketName, Valid: true}
-	}
 
 	err = tx.QueryRowContext(ctx, query,
 		comment.PostID,
 		comment.ParentID,
 		comment.Content,
-		imageKey,
-		bucketName,
+		pq.Array(comment.ImageURLs),
 	).Scan(
 		&comment.ID,        // Populate the generated UUID
 		&comment.CreatedAt, // Get actual DB timestamp
@@ -61,7 +56,7 @@ func (r *CommentRepository) FindByPostID(ctx context.Context, postid string) ([]
 	query := `
 		SELECT 
 			c.comment_id, c.post_id, c.parent_id,
-			c.content, c.image_key, c.bucket_name,
+			c.content, c.image_urls,
 			c.created_at,
 			u.session_id, u.avatar_url,
 			u.username
@@ -80,15 +75,14 @@ func (r *CommentRepository) FindByPostID(ctx context.Context, postid string) ([]
 	var comments []*domain.Comment
 	for rows.Next() {
 		var comment domain.Comment
-		var imageKey, bucketName sql.NullString
+		var imageURLs pq.StringArray
 
 		err := rows.Scan(
 			&comment.ID,
 			&comment.PostID,
 			&comment.ParentID,
 			&comment.Content,
-			&imageKey,
-			&bucketName,
+			&imageURLs,
 			&comment.CreatedAt,
 			&comment.User.SessionID,
 			&comment.User.AvatarURL,
@@ -98,10 +92,7 @@ func (r *CommentRepository) FindByPostID(ctx context.Context, postid string) ([]
 			return nil, err
 		}
 
-		if imageKey.Valid {
-			comment.ImageKey = &imageKey.String
-			comment.BucketName = &bucketName.String
-		}
+		comment.ImageURLs = []string(imageURLs)
 
 		comments = append(comments, &comment)
 	}
