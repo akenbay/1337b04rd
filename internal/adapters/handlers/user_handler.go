@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"1337b04rd/internal/domain"
 	"1337b04rd/internal/services"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 )
@@ -65,5 +67,16 @@ func (u *UserHandlers) createUser(r *http.Request) (string, error) {
 	return sessionID, nil
 }
 
-func (u *UserHandlers) ChangeUsername(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandlers) changeUsername(w http.ResponseWriter, r *http.Request) {
+	sessionID, err := getSessionID(r)
+
+	var req domain.NameRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		respondError(w, r, "Invalid username", http.StatusBadRequest)
+		return
+	}
+	newUsername := req.DisplayName
+
+	u.userService.ChangeUsername(r.Context(), sessionID, newUsername)
 }

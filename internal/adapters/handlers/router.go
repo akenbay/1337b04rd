@@ -12,6 +12,7 @@ func NewRouter(userService services.UserService, postService services.PostServic
 	commentHandler := newCommentHandlers(commentService)
 
 	mux.HandleFunc("GET /session/me", userHandler.getSessionMe)
+	mux.HandleFunc("POST /session/name", userHandler.changeUsername)
 	mux.HandleFunc("GET /threads", postHandler.getActivePostsApi)
 	mux.HandleFunc("GET /threads/archive", postHandler.getArchivedPostsApi)
 	mux.HandleFunc("GET /threads/view/", postHandler.getPostApi)

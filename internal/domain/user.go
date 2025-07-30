@@ -19,3 +19,7 @@ type UserRepository interface {
 	GetNumberOfUsers(ctx context.Context) (int, error)
 	FindByID(ctx context.Context, session_id string) (*User, error)
 }
+
+type NameRequest struct {
+	DisplayName string `json:"display_name"`
+}

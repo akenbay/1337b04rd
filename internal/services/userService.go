@@ -36,6 +36,7 @@ func (s *UserService) CreateUserAndGetID(ctx context.Context) (string, error) {
 }
 
 func (s *UserService) ChangeUsername(ctx context.Context, session_id string, newUsername string) error {
+	return s.userRepo.ChangeName(ctx, newUsername, session_id)
 }
 
 func (s *UserService) FindUserByID(ctx context.Context, session_id string) (*domain.User, error) {
