@@ -1,8 +1,8 @@
 package main
 
 import (
+	"1337b04rd/internal/adapters/fileUtils"
 	"1337b04rd/internal/adapters/handlers"
-	"1337b04rd/internal/adapters/imageValidator"
 	"1337b04rd/internal/adapters/postgres"
 	"1337b04rd/internal/adapters/rickMorty"
 	"1337b04rd/internal/adapters/triples"
@@ -27,7 +27,7 @@ func main() {
 	}
 	defer db.Close()
 
-	imageValidator := imageValidator.New([]string{"image/jpeg", "image/png"}, 5<<20)
+	file_utils := fileUtils.NewFileUtils()
 	imageStorage := triples.NewTriples("1337b04rd", 1414)
 	userOutlook := rickMorty.NewRickMortyAPI()
 
@@ -35,7 +35,7 @@ func main() {
 	postRepo := postgres.NewPostRepository(db, "1337b04rd")
 
 	userService := services.NewUserService(userRepo, userOutlook)
-	postServices := services.NewPostService(postRepo, imageStorage, imageValidator, *userService, "1337b04rd")
+	postServices := services.NewPostService(postRepo, imageStorage, file_utils, *userService, "1337b04rd")
 
 	router := handlers.NewRouter(*userService, *postServices)
 

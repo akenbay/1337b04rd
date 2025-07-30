@@ -14,6 +14,10 @@ type FileUtils struct{}
 
 var _ domain.FileUtils = (*FileUtils)(nil)
 
+func NewFileUtils() *FileUtils {
+	return &FileUtils{}
+}
+
 func (f *FileUtils) ValidateImage(fileHeader *multipart.FileHeader) error {
 	// 1. Check file size (without reading content)
 	if fileHeader.Size > 5<<20 { // 5MB limit
