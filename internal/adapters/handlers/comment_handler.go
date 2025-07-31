@@ -71,6 +71,7 @@ func (h *CommentHandlers) loadCommentsApi(w http.ResponseWriter, r *http.Request
 			respondError(w, r, "Post not found", http.StatusNotFound)
 			return
 		}
+		slog.Error("Error when loading comments:", "error", err)
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}

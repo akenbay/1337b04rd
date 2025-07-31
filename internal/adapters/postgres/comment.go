@@ -4,6 +4,7 @@ import (
 	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
+	"log/slog"
 
 	"github.com/lib/pq"
 )
@@ -21,6 +22,8 @@ func NewCommentRepository(db *sql.DB, defaultBucket string) *CommentRepository {
 }
 
 func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (string, error) {
+	slog.Info("Postgresql adapter saving comment:")
+
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return "", err
@@ -35,6 +38,8 @@ func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (
         RETURNING comment_id, created_at
     `
 
+	slog.Info("Created query")
+
 	err = tx.QueryRowContext(ctx, query,
 		comment.PostID,
 		comment.ParentID,
@@ -46,6 +51,7 @@ func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (
 	)
 
 	if err != nil {
+		slog.Info("Error when executing query", "error", err)
 		return "", err
 	}
 
@@ -53,6 +59,8 @@ func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (
 }
 
 func (r *CommentRepository) FindByPostID(ctx context.Context, postid string) ([]*domain.Comment, error) {
+	slog.Info("Postgresql adapter getting comments by post id:")
+
 	query := `
 		SELECT 
 			c.comment_id, c.post_id, c.parent_id,
@@ -68,6 +76,7 @@ func (r *CommentRepository) FindByPostID(ctx context.Context, postid string) ([]
 
 	rows, err := r.db.QueryContext(ctx, query, postid)
 	if err != nil {
+		slog.Error("Error when executing query:", "error", err)
 		return nil, err
 	}
 	defer rows.Close()
