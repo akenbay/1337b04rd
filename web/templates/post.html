@@ -224,9 +224,9 @@
 					return;
 					}
 
-					userInfo.textContent = userData.display_name || 'Anonymous';
-					if (userData.avatar_url) {
-					userAvatar.src = userData.avatar_url;
+					userInfo.textContent = userData.Username || 'Anonymous';
+					if (userData.AvatarURL) {
+					userAvatar.src = userData.AvatarURL;
 					userAvatar.style.display = 'block';
 					}
 				} catch (error) {

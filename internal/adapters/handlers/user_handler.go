@@ -23,7 +23,6 @@ func newUserHandlers(userService services.UserService) *UserHandlers {
 func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := getSessionID(r)
 	if err != nil {
-		slog.Info("blabla")
 		sessionID, err = u.createUser(r)
 		if err != nil {
 			respondError(w, r, "Failed to create new user session", http.StatusNotFound)
