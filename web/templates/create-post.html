@@ -99,7 +99,7 @@
 							throw new Error(`Failed to create thread: ${errorText}`)
 						}
 						const data = await response.json()
-						window.location.href = `post.html?id=${data.thread_id}`
+						window.location.href = `post.html?id=${data.ID}`
 					} catch (error) {
 						window.location.href = `error.html?code=${encodeURIComponent(
 							error.message

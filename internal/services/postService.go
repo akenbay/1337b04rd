@@ -24,7 +24,7 @@ func NewPostService(postRepo domain.PostRepository, imageStorage domain.ImageSto
 	}
 }
 
-func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.CreatePostReq) (string, error) {
+func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.CreatePostReq) (*domain.Post, error) {
 	var post domain.Post
 
 	for _, fileheader := range createPostReq.ImageData {
@@ -32,20 +32,20 @@ func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.Crea
 		// Validate if its image
 		if err := s.fileUtils.ValidateImage(fileheader); err != nil {
 			slog.Error("Failed to validate the image", "error", err)
-			return "", err
+			return nil, err
 		}
 
 		// Convert into bytes
 		fileBytes, err := s.fileUtils.FileHeaderToBytes(fileheader)
 		if err != nil {
 			slog.Error("Failed to convert image into bytes.")
-			return "", err
+			return nil, err
 		}
 
 		imageURL, err := s.imageStorage.Store(fileBytes, s.defaultBucket)
 		if err != nil {
 			slog.Error("Failed to store the image", "error", err)
-			return "", err
+			return nil, err
 		}
 		post.ImageURLs = append(post.ImageURLs, imageURL)
 	}
@@ -56,13 +56,13 @@ func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.Crea
 
 	user, err := s.userService.FindUserByID(ctx, sessionID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	post.User = *user
 
 	if err := post.Validate(); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	return s.postRepo.Save(ctx, &post)

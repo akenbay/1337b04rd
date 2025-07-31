@@ -31,7 +31,7 @@ type CreatePostReq struct {
 // Description of the functions that manipulate the database
 
 type PostRepository interface {
-	Save(ctx context.Context, post *Post) (string, error)
+	Save(ctx context.Context, post *Post) (*Post, error)
 	FindByID(ctx context.Context, id string) (*Post, error)
 	FindActive(ctx context.Context) ([]*Post, error)
 	FindArchived(ctx context.Context) ([]*Post, error)

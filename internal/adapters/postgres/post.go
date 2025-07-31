@@ -22,14 +22,14 @@ func NewPostRepository(db *sql.DB, defaultBucket string) *PostRepository {
 	}
 }
 
-func (r *PostRepository) Save(ctx context.Context, post *domain.Post) (string, error) {
+func (r *PostRepository) Save(ctx context.Context, post *domain.Post) (*domain.Post, error) {
 	if err := post.Validate(); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -53,10 +53,10 @@ func (r *PostRepository) Save(ctx context.Context, post *domain.Post) (string, e
 	)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return post.ID, tx.Commit()
+	return post, tx.Commit()
 }
 
 func (r *PostRepository) FindByID(ctx context.Context, id string) (*domain.Post, error) {
