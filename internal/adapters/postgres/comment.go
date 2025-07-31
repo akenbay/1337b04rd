@@ -33,8 +33,8 @@ func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (
 	query := `
         INSERT INTO comments (
             post_id, parent_id, content, 
-            image_urls
-        ) VALUES ($1, $2, $3, $4)
+            image_urls, session_id
+        ) VALUES ($1, $2, $3, $4, $5)
         RETURNING comment_id, created_at
     `
 
@@ -45,6 +45,7 @@ func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (
 		comment.ParentID,
 		comment.Content,
 		pq.Array(comment.ImageURLs),
+		comment.User.SessionID,
 	).Scan(
 		&comment.ID,        // Populate the generated UUID
 		&comment.CreatedAt, // Get actual DB timestamp
