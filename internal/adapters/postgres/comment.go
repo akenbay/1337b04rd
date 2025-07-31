@@ -61,7 +61,7 @@ func (r *CommentRepository) FindByPostID(ctx context.Context, postid string) ([]
 			u.session_id, u.avatar_url,
 			u.username
 		FROM comments c
-		JOIN user_sessions u ON c.session_id = u.session_id
+		LEFT JOIN user_sessions u ON c.session_id = u.session_id
 		WHERE c.post_id = $1
 		ORDER BY c.created_at ASC
 	`

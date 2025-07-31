@@ -27,6 +27,8 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 		respondError(w, r, "Failed to parse attached files (maximum size of files 10 MB)", http.StatusBadRequest)
 	}
 
+	slog.Info("Parsed multipart form")
+
 	content := r.FormValue("content")
 	postID := r.FormValue("thread_id")
 	files := r.MultipartForm.File["images"]
@@ -36,6 +38,8 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 		respondError(w, r, "Failed to get session id from cookies", http.StatusBadRequest)
 		return
 	}
+
+	slog.Info("Got sessionID")
 
 	comment, err := h.commentService.CreateComment(r.Context(), &domain.CreateCommentReq{
 		Content:   content,
@@ -48,12 +52,19 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	slog.Info("Created comment")
+
 	respondJSON(w, r, comment, http.StatusCreated)
 }
 
 func (h *CommentHandlers) loadCommentsApi(w http.ResponseWriter, r *http.Request) {
+	slog.Info("API load comments:")
+
 	// Extract the ID from the URL path
 	postID := r.URL.Query().Get("thread_id")
+
+	slog.Info("Got id from URL:", "id", postID)
+
 	comments, err := h.commentService.LoadComments(r.Context(), postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
@@ -63,6 +74,8 @@ func (h *CommentHandlers) loadCommentsApi(w http.ResponseWriter, r *http.Request
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
+	slog.Info("Loaded comments")
 
 	respondJSON(w, r, comments, http.StatusOK)
 	return

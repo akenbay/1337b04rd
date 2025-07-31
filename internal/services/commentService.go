@@ -25,6 +25,8 @@ func NewCommentService(commentRepo domain.CommentRepository, userService UserSer
 }
 
 func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *domain.CreateCommentReq) (string, error) {
+	slog.Info("Service create comment:")
+
 	var comment domain.Comment
 
 	for _, fileheader := range createCommentReq.ImageData {
@@ -50,6 +52,8 @@ func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *do
 		comment.ImageURLs = append(comment.ImageURLs, imageURL)
 	}
 
+	slog.Info("Preccessed and stored images from comment")
+
 	comment.Content = createCommentReq.Content
 	comment.PostID = createCommentReq.PostID
 	sessionID := createCommentReq.SessionID
@@ -60,6 +64,8 @@ func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *do
 	}
 
 	comment.User = *user
+
+	slog.Info("Found user by ID and assigned it to comment")
 
 	return s.commentRepo.Save(ctx, &comment)
 }
