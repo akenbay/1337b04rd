@@ -87,6 +87,7 @@ func (r *UserRepository) ChangeName(ctx context.Context, newName string, session
 	)
 
 	if err != nil {
+		slog.Error("Postgres, error when changing username:", "error", err)
 		return err
 	}
 

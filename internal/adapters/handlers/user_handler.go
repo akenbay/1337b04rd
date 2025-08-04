@@ -67,15 +67,22 @@ func (u *UserHandlers) createUser(r *http.Request) (string, error) {
 }
 
 func (u *UserHandlers) changeUsername(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Change username handler:")
+
 	sessionID, err := getSessionID(r)
 
 	var req domain.NameRequest
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		slog.Error("Error when decoding new username:", "error", err)
 		respondError(w, r, "Invalid username", http.StatusBadRequest)
 		return
 	}
 	newUsername := req.DisplayName
 
-	u.userService.ChangeUsername(r.Context(), sessionID, newUsername)
+	err = u.userService.ChangeUsername(r.Context(), sessionID, newUsername)
+
+	if err != nil {
+		slog.Error("Error when changing username:", "error", err)
+	}
 }
