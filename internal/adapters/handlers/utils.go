@@ -11,10 +11,6 @@ import (
 // JSON Response Helpers
 
 func respondJSON(w http.ResponseWriter, r *http.Request, data interface{}, status int) {
-	origin := r.Header.Get("Origin")
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", origin)
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Printf("JSON encoding error: %v", err)
