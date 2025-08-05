@@ -130,8 +130,8 @@
 												}]</span>
                     </div>
                     <p>${comment.Content}${
-								comment.ReplyToID
-									? ` <span class="text-blue-400">[Replying to ${comment.ReplyToID}]</span>`
+								comment.ParentID!=""
+									? ` <span class="text-blue-400">[Replying to ${comment.ParentID}]</span>`
 									: ''
 							}</p>
                     ${

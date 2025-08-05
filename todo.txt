@@ -1,2 +1,1 @@
-1. Fix the comments relying on new structure of posts
-2. Change the templates according to returning structs in handlers
+1. Fix reply to comments

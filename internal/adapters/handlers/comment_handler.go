@@ -21,6 +21,8 @@ func newCommentHandlers(commentService services.CommentService) *CommentHandlers
 func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Request) {
 	slog.Info("API creating comment:")
 
+	createReq := domain.CreateCommentReq{}
+
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		slog.Error("Could not parse images attached to comment:", "error", err)
@@ -29,11 +31,16 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 
 	slog.Info("Parsed multipart form")
 
-	content := r.FormValue("content")
-	postID := r.FormValue("thread_id")
-	files := r.MultipartForm.File["images"]
+	createReq.Content = r.FormValue("content")
+	createReq.PostID = r.FormValue("thread_id")
 
-	sessionID, err := getSessionID(r)
+	if parentID := r.FormValue("parent_id"); parentID != "" {
+		createReq.ParentID = &parentID
+	}
+
+	createReq.ImageData = r.MultipartForm.File["images"]
+
+	createReq.SessionID, err = getSessionID(r)
 	if err != nil {
 		respondError(w, r, "Failed to get session id from cookies", http.StatusBadRequest)
 		return
@@ -41,12 +48,7 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 
 	slog.Info("Got sessionID")
 
-	comment, err := h.commentService.CreateComment(r.Context(), &domain.CreateCommentReq{
-		Content:   content,
-		ImageData: files,
-		SessionID: sessionID,
-		PostID:    postID,
-	})
+	comment, err := h.commentService.CreateComment(r.Context(), &createReq)
 	if err != nil {
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
