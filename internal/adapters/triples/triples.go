@@ -28,7 +28,8 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 		return "", err
 	}
 
-	apiReq := "http://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
+	apiReq := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
+	apiReqForFront := "http://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
 	body := map[string]string{
 		"content": string(imageData),
 	}
@@ -52,7 +53,7 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	return apiReq, nil
+	return apiReqForFront, nil
 }
 
 // GenerateRandomToken creates a secure URL-safe token
