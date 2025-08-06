@@ -3,7 +3,6 @@ package handlers
 import (
 	"1337b04rd/internal/domain"
 	"1337b04rd/internal/services"
-	"errors"
 	"log/slog"
 	"net/http"
 )
@@ -57,10 +56,6 @@ func (h *PostHandlers) getPostApi(w http.ResponseWriter, r *http.Request) {
 	postID := r.URL.Path[len("/threads/view/"):] // Gets id from url path
 	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
-		if errors.Is(err, domain.ErrNotFound) {
-			respondError(w, r, "Post not found", http.StatusNotFound)
-			return
-		}
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -72,10 +67,6 @@ func (h *PostHandlers) getPostApi(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandlers) getActivePostsApi(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.postService.GetActivePosts(r.Context())
 	if err != nil {
-		if r.Header.Get("Accept") == "application/json" {
-			respondError(w, r, "Internal server error", http.StatusInternalServerError)
-			return
-		}
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -87,14 +78,19 @@ func (h *PostHandlers) getActivePostsApi(w http.ResponseWriter, r *http.Request)
 func (h *PostHandlers) getArchivedPostsApi(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.postService.GetArchivedPosts(r.Context())
 	if err != nil {
-		if r.Header.Get("Accept") == "application/json" {
-			respondError(w, r, "Internal server error", http.StatusInternalServerError)
-			return
-		}
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	respondJSON(w, r, posts, http.StatusOK)
+	return
+}
+
+func (h *PostHandlers) archiveOldPostsApi(w http.ResponseWriter, r *http.Request) {
+	err := h.postService.ArchivePosts(r.Context())
+	if err != nil {
+		respondError(w, r, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 	return
 }

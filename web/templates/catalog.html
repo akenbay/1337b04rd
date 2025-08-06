@@ -110,7 +110,20 @@
 			}
 			}
 
+			async function archiveOldPosts() {
+				try {
+					const response = await fetch('http://localhost:8080/threads/archive-old', {
+						method: 'POST',
+					credentials: 'include',
+					});
+					if (!response.ok) throw new Error('Failed to archive old posts');
+				} catch (error) {
+					window.location.href = `error.html?code=${encodeURIComponent(error.message)}`;
+				}
+				}
+
 			window.onload = async () => {
+				await archiveOldPosts()
 				await fetchUserData()
 				await loadThreads()
 			}

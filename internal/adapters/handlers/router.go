@@ -15,6 +15,7 @@ func NewRouter(userService services.UserService, postService services.PostServic
 	mux.HandleFunc("POST /session/name", userHandler.changeUsername)
 	mux.HandleFunc("GET /threads", postHandler.getActivePostsApi)
 	mux.HandleFunc("GET /threads/archive", postHandler.getArchivedPostsApi)
+	mux.HandleFunc("POST /threads/archive-old", postHandler.archiveOldPostsApi)
 	mux.HandleFunc("GET /threads/view/", postHandler.getPostApi)
 	mux.HandleFunc("POST /threads", postHandler.createPostAPI)
 	mux.HandleFunc("POST /threads/comment", commentHandler.createCommentAPI)
