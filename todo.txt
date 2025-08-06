@@ -1,3 +1,2 @@
-1. Fix reply to comments
-2. Archive posts when user enter any page of the site
-3. Check triple-s API
+1. Archive posts when user enter any page of the site
+2. Check triple-s API

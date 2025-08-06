@@ -36,6 +36,7 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 
 	if parentID := r.FormValue("parent_id"); parentID != "" {
 		createReq.ParentID = &parentID
+		slog.Info("Found reply comment:", "parent id", parentID)
 	}
 
 	createReq.ImageData = r.MultipartForm.File["images"]

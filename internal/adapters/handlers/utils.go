@@ -39,7 +39,7 @@ func setSessionID(w http.ResponseWriter, sessionID string) {
 		Name:    "session_id",
 		Value:   sessionID,
 		Path:    "/",
-		Expires: time.Now().Add(24 * time.Hour),
+		Expires: time.Now().Add(24 * time.Hour * 7),
 	}
 	http.SetCookie(w, cookie)
 }

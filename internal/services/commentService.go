@@ -58,6 +58,10 @@ func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *do
 	comment.PostID = createCommentReq.PostID
 	sessionID := createCommentReq.SessionID
 
+	if createCommentReq.ParentID != nil {
+		comment.ParentID = createCommentReq.ParentID
+	}
+
 	user, err := s.userService.FindUserByID(ctx, sessionID)
 	if err != nil {
 		return "", err
