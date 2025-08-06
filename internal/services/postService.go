@@ -44,7 +44,7 @@ func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.Crea
 
 		imageURL, err := s.imageStorage.Store(fileBytes, s.defaultBucket)
 		if err != nil {
-			slog.Error("Failed to store the image", "error", err)
+			slog.Error("Failed to store the image:", "error", err)
 			return nil, err
 		}
 		post.ImageURLs = append(post.ImageURLs, imageURL)

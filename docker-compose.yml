@@ -48,6 +48,15 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
+  triple-s:
+    build: ~/triple-s/  # Assumes Dockerfile is in the home directory
+    ports:
+      - "1414:1414"
+    depends_on:
+      - app
+    restart: unless-stopped
+
+
 volumes:
   pgdata:
   pgadmin-data:

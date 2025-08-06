@@ -28,7 +28,7 @@ func main() {
 	defer db.Close()
 
 	file_utils := fileUtils.NewFileUtils()
-	imageStorage := triples.NewTriples("1337b04rd", 1414)
+	imageStorage := triples.NewTriples(1414)
 	userOutlook := rickMorty.NewRickMortyAPI()
 
 	userRepo := postgres.NewUserRepository(db)

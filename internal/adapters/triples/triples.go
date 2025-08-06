@@ -16,7 +16,7 @@ type Triples struct {
 
 var _ domain.ImageStorageAPI = (*Triples)(nil)
 
-func NewTriples(bucketName string, port int) *Triples {
+func NewTriples(port int) *Triples {
 	return &Triples{
 		port: port,
 	}
@@ -28,7 +28,7 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 		return "", err
 	}
 
-	apiReq := "https://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
+	apiReq := "http://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
 	body := map[string]string{
 		"content": string(imageData),
 	}

@@ -1,2 +1,2 @@
-1. Archive posts when user enter any page of the site
-2. Check triple-s API
+1. Check triple-s API
+2. Write tests for services
