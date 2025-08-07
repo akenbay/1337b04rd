@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -28,8 +29,10 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 		return "", err
 	}
 
-	apiReq := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
-	apiReqForFront := "http://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
+	createBucketURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName
+	saveImageURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
+
+	urlOfImage := "http://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
 	body := map[string]string{
 		"content": string(imageData),
 	}
@@ -39,21 +42,43 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, apiReq, bytes.NewBuffer(jsonData))
+	saveImageReq, err := http.NewRequest(http.MethodPut, saveImageURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	saveImageReq.Header.Set("Content-Type", "application/json")
+
+	createBucketReq, err := http.NewRequest(http.MethodPut, createBucketURL, nil)
+	if err != nil {
+		return "", err
+	}
+	createBucketReq.Header.Set("Content-Type", "application/json")
 
 	// Send request
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	bucketResp, err := client.Do(createBucketReq)
 	if err != nil {
+		slog.Error("Error when creating bucket", "error", err)
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer bucketResp.Body.Close()
 
-	return apiReqForFront, nil
+	if bucketResp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("bucket creation failed with status: %s", bucketResp.Status)
+	}
+
+	imageResp, err := client.Do(saveImageReq)
+	if err != nil {
+		slog.Error("Error when saving image", "error", err)
+		return "", err
+	}
+	defer imageResp.Body.Close()
+
+	if imageResp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("image upload failed with status: %s", imageResp.Status)
+	}
+
+	return urlOfImage, nil
 }
 
 // GenerateRandomToken creates a secure URL-safe token
