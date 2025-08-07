@@ -44,5 +44,8 @@ func (p *Post) Validate() error {
 	if len(p.Title) < 5 {
 		return errors.New("title too short")
 	}
+	if len(p.Content) < 5 {
+		return errors.New("Content too short")
+	}
 	return nil
 }

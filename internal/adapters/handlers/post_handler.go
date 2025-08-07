@@ -44,7 +44,7 @@ func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
 		SessionID: sessionID,
 	})
 	if err != nil {
-		respondError(w, r, "Internal server error", http.StatusInternalServerError)
+		respondError(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
