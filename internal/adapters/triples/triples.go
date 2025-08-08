@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -25,6 +24,7 @@ func NewTriples(port int) *Triples {
 }
 
 func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
+	slog.Info("Fisrt 10 chars of image data:", "chars", imageData[:10])
 	image_key, err := generateRandomToken()
 	if err != nil {
 		return "", err
@@ -36,16 +36,8 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	saveImageURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
 
 	urlOfImage := "http://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
-	body := map[string]string{
-		"content": string(imageData),
-	}
 
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return "", err
-	}
-
-	saveImageReq, err := http.NewRequest(http.MethodPut, saveImageURL, bytes.NewBuffer(jsonData))
+	saveImageReq, err := http.NewRequest(http.MethodPut, saveImageURL, bytes.NewReader(imageData))
 	if err != nil {
 		return "", err
 	}
@@ -55,7 +47,6 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	createBucketReq.Header.Set("Content-Type", "application/json")
 
 	// Send request
 	client := &http.Client{}
