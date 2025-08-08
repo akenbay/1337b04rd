@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 type Triples struct {
@@ -28,6 +29,8 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	slog.Info("Storing new image:", "iamge key", image_key)
 
 	createBucketURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName
 	saveImageURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
@@ -87,5 +90,9 @@ func generateRandomToken() (string, error) {
 	if _, err := rand.Read(bytes); err != nil {
 		return "", fmt.Errorf("token generation failed: %w", err)
 	}
-	return base64.URLEncoding.EncodeToString(bytes), nil
+	key := base64.URLEncoding.EncodeToString(bytes)
+	key = strings.ReplaceAll(key, ".", "_") // Replace unsafe chars
+	key = strings.ReplaceAll(key, "/", "_") // Replace unsafe chars
+	key = strings.ReplaceAll(key, "=", "")  // Replace unsafe chars
+	return key, nil
 }
