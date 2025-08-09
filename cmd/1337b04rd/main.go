@@ -11,6 +11,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,6 +35,20 @@ func main() {
 	userRepo := postgres.NewUserRepository(db)
 	postRepo := postgres.NewPostRepository(db, "posts")
 	commentRepo := postgres.NewCommentRepository(db, "comments")
+
+	err = imageStorage.CreateBucket("posts")
+
+	if err != nil {
+		slog.Error("Error when creating a bucket", "error", err)
+		return
+	}
+
+	err = imageStorage.CreateBucket("comments")
+
+	if err != nil {
+		slog.Error("Error when creating a bucket")
+		return
+	}
 
 	userService := services.NewUserService(userRepo, userOutlook)
 	postServices := services.NewPostService(postRepo, imageStorage, file_utils, *userService, "posts")

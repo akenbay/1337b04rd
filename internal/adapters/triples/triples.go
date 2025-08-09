@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -32,7 +33,6 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 
 	slog.Info("Storing new image:", "iamge key", image_key)
 
-	createBucketURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName
 	saveImageURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
 
 	urlOfImage := "http://localhost:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
@@ -41,25 +41,9 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	saveImageReq.Header.Set("Content-Type", "application/json")
-
-	createBucketReq, err := http.NewRequest(http.MethodPut, createBucketURL, nil)
-	if err != nil {
-		return "", err
-	}
 
 	// Send request
 	client := &http.Client{}
-	bucketResp, err := client.Do(createBucketReq)
-	if err != nil {
-		slog.Error("Error when creating bucket", "error", err)
-		return "", err
-	}
-	defer bucketResp.Body.Close()
-
-	if bucketResp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("bucket creation failed with status: %s", bucketResp.Status)
-	}
 
 	imageResp, err := client.Do(saveImageReq)
 	if err != nil {
@@ -68,11 +52,40 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 	}
 	defer imageResp.Body.Close()
 
+	// if imageResp.StatusCode != http.StatusOK {
+	// 	return "", fmt.Errorf("image upload failed with status: %s", imageResp.Status)
+	// }
+
 	if imageResp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("image upload failed with status: %s", imageResp.Status)
+		body, _ := io.ReadAll(imageResp.Body)
+		return "", fmt.Errorf("upload failed (status %d): %s", imageResp.StatusCode, string(body))
 	}
 
 	return urlOfImage, nil
+}
+
+func (t *Triples) CreateBucket(bucketName string) error {
+	createBucketURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName
+
+	createBucketReq, err := http.NewRequest(http.MethodPut, createBucketURL, nil)
+	if err != nil {
+		return err
+	}
+
+	// Send request
+	client := &http.Client{}
+	bucketResp, err := client.Do(createBucketReq)
+	if err != nil {
+		slog.Error("Error when creating bucket", "error", err)
+		return err
+	}
+	defer bucketResp.Body.Close()
+
+	if bucketResp.StatusCode != http.StatusOK && bucketResp.StatusCode != http.StatusConflict {
+		return fmt.Errorf("bucket creation failed with status: %s", bucketResp.Status)
+	}
+
+	return nil
 }
 
 // GenerateRandomToken creates a secure URL-safe token

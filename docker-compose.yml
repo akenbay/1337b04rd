@@ -49,7 +49,7 @@ services:
       - pgadmin-data:/var/lib/pgadmin
 
   triple-s:
-    build: ~/triple-s/  # Assumes Dockerfile is in the home directory
+    build: ~/newhome/triple-s/  # Assumes Dockerfile is in the home directory
     ports:
       - "1414:1414"
     expose:

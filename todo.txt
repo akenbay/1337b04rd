@@ -1,2 +1,5 @@
-1. Check triple-s API
+
 2. Write tests for services
+3. Fix content and lengths
+4. Fit content and title into div
+5. cookie of google
