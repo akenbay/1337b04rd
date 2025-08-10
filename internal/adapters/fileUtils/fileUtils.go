@@ -19,6 +19,10 @@ func NewFileUtils() *FileUtils {
 }
 
 func (f *FileUtils) ValidateImage(fileHeader *multipart.FileHeader) error {
+	if fileHeader == nil || fileHeader.Size == 0 {
+		return fmt.Errorf("invalid file content")
+	}
+
 	// 1. Check file size (without reading content)
 	if fileHeader.Size > 5<<20 { // 5MB limit
 		return fmt.Errorf("file too large (max 5MB)")
@@ -46,6 +50,9 @@ func (f *FileUtils) ValidateImage(fileHeader *multipart.FileHeader) error {
 }
 
 func (f *FileUtils) FileHeaderToBytes(fileHeader *multipart.FileHeader) ([]byte, error) {
+	if fileHeader == nil {
+		return []byte{}, fmt.Errorf("nil fileheader")
+	}
 	file, err := fileHeader.Open()
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
