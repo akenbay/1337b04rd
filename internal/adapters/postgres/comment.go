@@ -1,11 +1,10 @@
 package postgres
 
 import (
+	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
 	"log/slog"
-
-	"1337b04rd/internal/domain"
 
 	"github.com/lib/pq"
 )
@@ -108,4 +107,20 @@ func (r *CommentRepository) FindByPostID(ctx context.Context, postid string) ([]
 	}
 
 	return comments, nil
+}
+
+func (r *CommentRepository) ExistByID(ctx context.Context, id string) bool {
+	var count int
+	query := `SELECT COUNT(*) FROM comments WHERE comment_id = $1`
+	err := r.db.QueryRow(query, id).Scan(&count)
+	if err != nil {
+		slog.Error("Error when finding out if comment exists by id", "error", err)
+		return false
+	}
+
+	if count == 0 {
+		return false
+	}
+
+	return true
 }

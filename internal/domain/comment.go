@@ -27,4 +27,5 @@ type CreateCommentReq struct {
 type CommentRepository interface {
 	Save(ctx context.Context, comment *Comment) (string, error)
 	FindByPostID(ctx context.Context, postid string) ([]*Comment, error)
+	ExistByID(ctx context.Context, id string) bool
 }

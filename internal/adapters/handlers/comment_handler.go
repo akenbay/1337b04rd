@@ -1,12 +1,11 @@
 package handlers
 
 import (
+	"1337b04rd/internal/domain"
+	"1337b04rd/internal/services"
 	"errors"
 	"log/slog"
 	"net/http"
-
-	"1337b04rd/internal/domain"
-	"1337b04rd/internal/services"
 )
 
 type CommentHandlers struct {
@@ -52,7 +51,7 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 
 	comment, err := h.commentService.CreateComment(r.Context(), &createReq)
 	if err != nil {
-		respondError(w, r, "Internal server error", http.StatusInternalServerError)
+		respondError(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

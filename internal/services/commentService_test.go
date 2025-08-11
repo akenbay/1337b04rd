@@ -1,13 +1,12 @@
 package services
 
 import (
+	"1337b04rd/internal/domain"
 	"context"
 	"errors"
 	"mime/multipart"
 	"reflect"
 	"testing"
-
-	"1337b04rd/internal/domain"
 )
 
 // --------------------
@@ -29,6 +28,10 @@ func (m *MockCommentRepo) Save(ctx context.Context, comment *domain.Comment) (st
 
 func (m *MockCommentRepo) FindByPostID(ctx context.Context, postid string) ([]*domain.Comment, error) {
 	return m.comments, m.findErr
+}
+
+func (m *MockCommentRepo) ExistByID(ctx context.Context, postid string) bool {
+	return true
 }
 
 type MockImageStorage struct {

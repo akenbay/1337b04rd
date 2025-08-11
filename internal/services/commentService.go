@@ -1,10 +1,10 @@
 package services
 
 import (
-	"context"
-	"log/slog"
-
 	"1337b04rd/internal/domain"
+	"context"
+	"fmt"
+	"log/slog"
 )
 
 type CommentService struct {
@@ -61,6 +61,10 @@ func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *do
 
 	if createCommentReq.ParentID != nil {
 		comment.ParentID = createCommentReq.ParentID
+		if !s.commentRepo.ExistByID(ctx, *comment.ParentID) {
+			slog.Error("Error when finding replying comment")
+			return "", fmt.Errorf("Replying comment does not exist")
+		}
 	}
 
 	user, err := s.userService.FindUserByID(ctx, sessionID)
