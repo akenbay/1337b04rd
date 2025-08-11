@@ -1,12 +1,6 @@
 package main
 
 import (
-	"1337b04rd/internal/adapters/fileUtils"
-	"1337b04rd/internal/adapters/handlers"
-	"1337b04rd/internal/adapters/postgres"
-	"1337b04rd/internal/adapters/rickMorty"
-	"1337b04rd/internal/adapters/triples"
-	"1337b04rd/internal/services"
 	"context"
 	"database/sql"
 	"fmt"
@@ -17,6 +11,13 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"1337b04rd/internal/adapters/fileUtils"
+	"1337b04rd/internal/adapters/handlers"
+	"1337b04rd/internal/adapters/postgres"
+	"1337b04rd/internal/adapters/rickMorty"
+	"1337b04rd/internal/adapters/triples"
+	"1337b04rd/internal/services"
 
 	_ "github.com/lib/pq"
 )
@@ -37,14 +38,12 @@ func main() {
 	commentRepo := postgres.NewCommentRepository(db, "comments")
 
 	err = imageStorage.CreateBucket("posts")
-
 	if err != nil {
 		slog.Error("Error when creating a bucket", "error", err)
 		return
 	}
 
 	err = imageStorage.CreateBucket("comments")
-
 	if err != nil {
 		slog.Error("Error when creating a bucket")
 		return

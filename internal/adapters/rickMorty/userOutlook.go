@@ -1,12 +1,13 @@
 package rickMorty
 
 import (
-	"1337b04rd/internal/domain"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+
+	"1337b04rd/internal/domain"
 )
 
 type RickMortyAPI struct {

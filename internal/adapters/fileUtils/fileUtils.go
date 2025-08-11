@@ -1,13 +1,14 @@
 package fileUtils
 
 import (
-	"1337b04rd/internal/domain"
 	"bytes"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"strings"
+
+	"1337b04rd/internal/domain"
 )
 
 type FileUtils struct{}

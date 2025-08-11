@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"1337b04rd/internal/services"
 	"net/http"
+
+	"1337b04rd/internal/services"
 )
 
 func NewRouter(userService services.UserService, postService services.PostService, commentService services.CommentService) *http.ServeMux {

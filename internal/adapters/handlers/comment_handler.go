@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"1337b04rd/internal/domain"
-	"1337b04rd/internal/services"
 	"errors"
 	"log/slog"
 	"net/http"
+
+	"1337b04rd/internal/domain"
+	"1337b04rd/internal/services"
 )
 
 type CommentHandlers struct {

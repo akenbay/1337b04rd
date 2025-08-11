@@ -1,12 +1,13 @@
 package services_test
 
 import (
-	"1337b04rd/internal/domain"
-	"1337b04rd/internal/services"
 	"context"
 	"errors"
 	"testing"
 	"time"
+
+	"1337b04rd/internal/domain"
+	"1337b04rd/internal/services"
 )
 
 // --- Fake implementations ---

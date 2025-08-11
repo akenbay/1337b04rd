@@ -1,10 +1,11 @@
 package postgres
 
 import (
-	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
 	"log/slog"
+
+	"1337b04rd/internal/domain"
 )
 
 type UserRepository struct {
@@ -85,7 +86,6 @@ func (r *UserRepository) ChangeName(ctx context.Context, newName string, session
 		&user.CreatedAt,
 		&user.ExpiresAt,
 	)
-
 	if err != nil {
 		slog.Error("Postgres, error when changing username:", "error", err)
 		return err

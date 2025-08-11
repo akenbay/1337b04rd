@@ -1,7 +1,6 @@
 package triples
 
 import (
-	"1337b04rd/internal/domain"
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
@@ -10,6 +9,8 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"1337b04rd/internal/domain"
 )
 
 type Triples struct {

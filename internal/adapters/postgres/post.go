@@ -1,11 +1,12 @@
 package postgres
 
 import (
-	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
 	"errors"
 	"time"
+
+	"1337b04rd/internal/domain"
 
 	"github.com/lib/pq"
 )
@@ -51,7 +52,6 @@ func (r *PostRepository) Save(ctx context.Context, post *domain.Post) (*domain.P
 		&post.CreatedAt, // Get actual DB timestamp
 		&post.UpdatedAt, // Get actual DB timestamp
 	)
-
 	if err != nil {
 		return nil, err
 	}

@@ -1,13 +1,14 @@
 package rickMorty
 
 import (
-	"1337b04rd/internal/domain"
 	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
+
+	"1337b04rd/internal/domain"
 )
 
 // mockHTTPTransport creates a mock HTTP transport that returns predefined responses

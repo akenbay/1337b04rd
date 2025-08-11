@@ -1,10 +1,11 @@
 package postgres
 
 import (
-	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
 	"log/slog"
+
+	"1337b04rd/internal/domain"
 
 	"github.com/lib/pq"
 )
@@ -50,7 +51,6 @@ func (r *CommentRepository) Save(ctx context.Context, comment *domain.Comment) (
 		&comment.ID,        // Populate the generated UUID
 		&comment.CreatedAt, // Get actual DB timestamp
 	)
-
 	if err != nil {
 		slog.Info("Error when executing query", "error", err)
 		return "", err

@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"1337b04rd/internal/domain"
-	"1337b04rd/internal/services"
 	"encoding/json"
 	"log/slog"
 	"net/http"
+
+	"1337b04rd/internal/domain"
+	"1337b04rd/internal/services"
 )
 
 type UserHandlers struct {
@@ -81,7 +82,6 @@ func (u *UserHandlers) changeUsername(w http.ResponseWriter, r *http.Request) {
 	newUsername := req.DisplayName
 
 	err = u.userService.ChangeUsername(r.Context(), sessionID, newUsername)
-
 	if err != nil {
 		slog.Error("Error when changing username:", "error", err)
 	}

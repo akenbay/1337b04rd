@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"1337b04rd/internal/domain"
-	"1337b04rd/internal/services"
 	"log/slog"
 	"net/http"
+
+	"1337b04rd/internal/domain"
+	"1337b04rd/internal/services"
 )
 
 type PostHandlers struct {
