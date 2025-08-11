@@ -3,8 +3,8 @@ package handlers
 import (
 	"1337b04rd/internal/domain"
 	"1337b04rd/internal/services"
+	"1337b04rd/pkg/logger"
 	"errors"
-	"log/slog"
 	"net/http"
 )
 
@@ -19,24 +19,24 @@ func newCommentHandlers(commentService services.CommentService) *CommentHandlers
 }
 
 func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Request) {
-	slog.Info("API creating comment:")
+	logger.Info("API creating comment:")
 
 	createReq := domain.CreateCommentReq{}
 
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		slog.Error("Could not parse images attached to comment:", "error", err)
+		logger.Error("Could not parse images attached to comment:", "error", err)
 		respondError(w, r, "Failed to parse attached files (maximum size of files 10 MB)", http.StatusBadRequest)
 	}
 
-	slog.Info("Parsed multipart form")
+	logger.Info("Parsed multipart form")
 
 	createReq.Content = r.FormValue("content")
 	createReq.PostID = r.FormValue("thread_id")
 
 	if parentID := r.FormValue("parent_id"); parentID != "" {
 		createReq.ParentID = &parentID
-		slog.Info("Found reply comment:", "parent id", parentID)
+		logger.Info("Found reply comment:", "parent id", parentID)
 	}
 
 	createReq.ImageData = r.MultipartForm.File["images"]
@@ -47,26 +47,26 @@ func (h *CommentHandlers) createCommentAPI(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	slog.Info("Got sessionID")
+	logger.Info("Got sessionID")
 
 	comment, err := h.commentService.CreateComment(r.Context(), &createReq)
 	if err != nil {
-		respondError(w, r, "Internal server error", http.StatusInternalServerError)
+		respondError(w, r, err.Error(), 200)
 		return
 	}
 
-	slog.Info("Created comment")
+	logger.Info("Created comment")
 
 	respondJSON(w, r, comment, http.StatusCreated)
 }
 
 func (h *CommentHandlers) loadCommentsApi(w http.ResponseWriter, r *http.Request) {
-	slog.Info("API load comments:")
+	logger.Info("API load comments:")
 
 	// Extract the ID from the URL path
 	postID := r.URL.Query().Get("thread_id")
 
-	slog.Info("Got id from URL:", "id", postID)
+	logger.Info("Got id from URL:", "id", postID)
 
 	comments, err := h.commentService.LoadComments(r.Context(), postID)
 	if err != nil {
@@ -74,12 +74,12 @@ func (h *CommentHandlers) loadCommentsApi(w http.ResponseWriter, r *http.Request
 			respondError(w, r, "Post not found", http.StatusNotFound)
 			return
 		}
-		slog.Error("Error when loading comments:", "error", err)
+		logger.Error("Error when loading comments:", "error", err)
 		respondError(w, r, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	slog.Info("Loaded comments")
+	logger.Info("Loaded comments")
 
 	respondJSON(w, r, comments, http.StatusOK)
 	return

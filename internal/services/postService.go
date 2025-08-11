@@ -2,8 +2,8 @@ package services
 
 import (
 	"1337b04rd/internal/domain"
+	"1337b04rd/pkg/logger"
 	"context"
-	"log/slog"
 )
 
 type PostService struct {
@@ -31,20 +31,20 @@ func (s *PostService) CreatePost(ctx context.Context, createPostReq *domain.Crea
 
 		// Validate if its image
 		if err := s.fileUtils.ValidateImage(fileheader); err != nil {
-			slog.Error("Failed to validate the image", "error", err)
+			logger.Error("Failed to validate the image", "error", err)
 			return nil, err
 		}
 
 		// Convert into bytes
 		fileBytes, err := s.fileUtils.FileHeaderToBytes(fileheader)
 		if err != nil {
-			slog.Error("Failed to convert image into bytes.")
+			logger.Error("Failed to convert image into bytes.")
 			return nil, err
 		}
 
 		imageURL, err := s.imageStorage.Store(fileBytes, s.defaultBucket)
 		if err != nil {
-			slog.Error("Failed to store the image:", "error", err)
+			logger.Error("Failed to store the image:", "error", err)
 			return nil, err
 		}
 		post.ImageURLs = append(post.ImageURLs, imageURL)

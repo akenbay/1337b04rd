@@ -200,6 +200,7 @@
 								credentials: 'include',
 							}
 						)
+						console.log(response)
 						if (!response.ok) {
 							const errorText = await response.text()
 							throw new Error(`Failed to post comment: ${errorText}`)

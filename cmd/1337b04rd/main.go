@@ -7,11 +7,11 @@ import (
 	"1337b04rd/internal/adapters/rickMorty"
 	"1337b04rd/internal/adapters/triples"
 	"1337b04rd/internal/services"
+	"1337b04rd/pkg/logger"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,6 +22,7 @@ import (
 )
 
 func main() {
+	logger.Init("development")
 	db, err := initDB()
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
@@ -39,14 +40,14 @@ func main() {
 	err = imageStorage.CreateBucket("posts")
 
 	if err != nil {
-		slog.Error("Error when creating a bucket", "error", err)
+		logger.Error("Error when creating a bucket", "error", err)
 		return
 	}
 
 	err = imageStorage.CreateBucket("comments")
 
 	if err != nil {
-		slog.Error("Error when creating a bucket")
+		logger.Error("Error when creating a bucket")
 		return
 	}
 

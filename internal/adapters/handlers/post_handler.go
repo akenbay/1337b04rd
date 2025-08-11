@@ -3,7 +3,7 @@ package handlers
 import (
 	"1337b04rd/internal/domain"
 	"1337b04rd/internal/services"
-	"log/slog"
+	"1337b04rd/pkg/logger"
 	"net/http"
 )
 
@@ -18,7 +18,7 @@ func newPostHandlers(postService services.PostService) *PostHandlers {
 }
 
 func (h *PostHandlers) createPostAPI(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Creating post handler:")
+	logger.Info("Creating post handler:")
 
 	err := r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {
