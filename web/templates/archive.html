@@ -6,7 +6,7 @@
   <title>Image Board - Archive</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="bg-gray-900 text-white min-h-screen ">
   <header class="bg-gray-800 p-4 flex justify-between items-center">
     <h1 class="text-2xl font-bold">Image Board - Archive</h1>
     <div class="flex items-center space-x-4">
@@ -73,20 +73,14 @@
 					threadDiv.className =
 						'bg-gray-800 p-4 rounded-lg hover:shadow-lg transition'
 					threadDiv.innerHTML = `
-					<a href="${
-													thread.IsDeleted
-														? 'archive-post.html'
-														: 'post.html'
-												}?id=${thread.ID}">
+					<a href="archive-post.html?id=${thread.ID}">
 						${
 															thread.ImageURLs &&
 															thread.ImageURLs.length > 0
 																? `<img src="${thread.ImageURLs[0]}" alt="Thread image" class="w-full h-48 object-cover rounded mb-2">`
 																: ''
 														}
-						<h2 class="text-lg font-semibold ${
-															thread.IsDeleted ? 'text-red-400' : ''
-														}">${thread.Title}</h2>
+						<h2 class="text-lg font-semibold truncate text-red-400">${thread.Title}</h2>
 						<p class="text-gray-400 truncate">${
 															thread.Content
 														}</p>

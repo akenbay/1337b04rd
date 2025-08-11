@@ -70,8 +70,8 @@
 					if (!response.ok) throw new Error('Failed to fetch thread')
 					const thread = await response.json()
 					document.getElementById('thread').innerHTML = `
-                    <h2 class="text-xl font-semibold">${thread.Title}</h2>
-                    <p class="text-gray-400">${thread.Content}</p>
+                    <h2 class="text-xl font-semibold break-words whitespace-pre-wrap">${thread.Title}</h2>
+                    <p class="text-gray-400 break-words whitespace-pre-wrap">${thread.Content}</p>
                     ${
 											thread.ImageURLs?.length > 0
 												? thread.ImageURLs.map(
@@ -129,7 +129,7 @@
 													comment.ID
 												}]</span>
                     </div>
-                    <p>${comment.Content}${
+                    <p class="break-words whitespace-pre-wrap">${comment.Content}${
 								comment.ReplyToID
 									? ` <span class="text-blue-400">[Replying to ${comment.ReplyToID}]</span>`
 									: ''
