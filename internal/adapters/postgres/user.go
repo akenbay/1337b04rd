@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"1337b04rd/internal/domain"
-	"1337b04rd/pkg/logger"
 	"context"
 	"database/sql"
+	"log/slog"
 )
 
 type UserRepository struct {
@@ -20,7 +20,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string) (string, error) {
-	logger.Info("Save func")
+	slog.Info("Save func")
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return "", err
@@ -36,7 +36,7 @@ func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string
 
 	var user domain.User
 
-	logger.Info("Created query and transaction")
+	slog.Info("Created query and transaction")
 
 	err = tx.QueryRowContext(ctx, query,
 		avatarURL,
@@ -45,7 +45,7 @@ func (r *UserRepository) Save(ctx context.Context, avatarURL string, name string
 		&user.SessionID, // Populate the generated UUID
 	)
 
-	logger.Info("Pushed the query into the sql")
+	slog.Info("Pushed the query into the sql")
 
 	if err != nil {
 		return "", err
@@ -87,7 +87,7 @@ func (r *UserRepository) ChangeName(ctx context.Context, newName string, session
 	)
 
 	if err != nil {
-		logger.Error("Postgres, error when changing username:", "error", err)
+		slog.Error("Postgres, error when changing username:", "error", err)
 		return err
 	}
 

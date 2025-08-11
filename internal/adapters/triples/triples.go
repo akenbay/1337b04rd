@@ -2,12 +2,12 @@ package triples
 
 import (
 	"1337b04rd/internal/domain"
-	"1337b04rd/pkg/logger"
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 )
@@ -25,13 +25,13 @@ func NewTriples(port int) *Triples {
 }
 
 func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
-	logger.Info("Fisrt 10 chars of image data:", "chars", imageData[:10])
+	slog.Info("Fisrt 10 chars of image data:", "chars", imageData[:10])
 	image_key, err := generateRandomToken()
 	if err != nil {
 		return "", err
 	}
 
-	logger.Info("Storing new image:", "iamge key", image_key)
+	slog.Info("Storing new image:", "iamge key", image_key)
 
 	saveImageURL := "http://triple-s:" + fmt.Sprint(t.port) + "/" + bucketName + "/" + image_key
 
@@ -47,7 +47,7 @@ func (t *Triples) Store(imageData []byte, bucketName string) (string, error) {
 
 	imageResp, err := client.Do(saveImageReq)
 	if err != nil {
-		logger.Error("Error when saving image", "error", err)
+		slog.Error("Error when saving image", "error", err)
 		return "", err
 	}
 	defer imageResp.Body.Close()
@@ -76,7 +76,7 @@ func (t *Triples) CreateBucket(bucketName string) error {
 	client := &http.Client{}
 	bucketResp, err := client.Do(createBucketReq)
 	if err != nil {
-		logger.Error("Error when creating bucket", "error", err)
+		slog.Error("Error when creating bucket", "error", err)
 		return err
 	}
 	defer bucketResp.Body.Close()

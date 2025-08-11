@@ -2,8 +2,8 @@ package services
 
 import (
 	"1337b04rd/internal/domain"
-	"1337b04rd/pkg/logger"
 	"context"
+	"log/slog"
 )
 
 type CommentService struct {
@@ -25,7 +25,7 @@ func NewCommentService(commentRepo domain.CommentRepository, userService UserSer
 }
 
 func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *domain.CreateCommentReq) (string, error) {
-	logger.Info("Service create comment:")
+	slog.Info("Service create comment:")
 
 	var comment domain.Comment
 
@@ -33,26 +33,26 @@ func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *do
 
 		// Validate if its image
 		if err := s.fileUtils.ValidateImage(fileheader); err != nil {
-			logger.Error("Failed to validate the image", "error", err)
+			slog.Error("Failed to validate the image", "error", err)
 			return "", err
 		}
 
 		// Convert into bytes
 		fileBytes, err := s.fileUtils.FileHeaderToBytes(fileheader)
 		if err != nil {
-			logger.Error("Failed to convert image into bytes.")
+			slog.Error("Failed to convert image into bytes.")
 			return "", err
 		}
 
 		imageURL, err := s.imageStorage.Store(fileBytes, s.defaultBucket)
 		if err != nil {
-			logger.Error("Failed to store the image", "error", err)
+			slog.Error("Failed to store the image", "error", err)
 			return "", err
 		}
 		comment.ImageURLs = append(comment.ImageURLs, imageURL)
 	}
 
-	logger.Info("Preccessed and stored images from comment")
+	slog.Info("Preccessed and stored images from comment")
 
 	comment.Content = createCommentReq.Content
 	comment.PostID = createCommentReq.PostID
@@ -69,7 +69,7 @@ func (s *CommentService) CreateComment(ctx context.Context, createCommentReq *do
 
 	comment.User = *user
 
-	logger.Info("Found user by ID and assigned it to comment")
+	slog.Info("Found user by ID and assigned it to comment")
 
 	return s.commentRepo.Save(ctx, &comment)
 }

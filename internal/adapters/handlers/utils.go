@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"1337b04rd/pkg/logger"
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -26,7 +26,7 @@ func respondError(w http.ResponseWriter, r *http.Request, message string, status
 func getSessionID(r *http.Request) (string, error) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		logger.Error("Failed to get session_id from cookies", "error", err)
+		slog.Error("Failed to get session_id from cookies", "error", err)
 		return "", err
 	}
 	return cookie.Value, nil
@@ -36,13 +36,10 @@ func getSessionID(r *http.Request) (string, error) {
 
 func setSessionID(w http.ResponseWriter, sessionID string) {
 	cookie := &http.Cookie{
-		Name:     "session_id",
-		Value:    sessionID,
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour * 7),
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure:   false, // set true if using HTTPS
+		Name:    "session_id",
+		Value:   sessionID,
+		Path:    "/",
+		Expires: time.Now().Add(24 * time.Hour * 7),
 	}
 	http.SetCookie(w, cookie)
 }

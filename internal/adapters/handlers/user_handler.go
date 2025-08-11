@@ -3,8 +3,8 @@ package handlers
 import (
 	"1337b04rd/internal/domain"
 	"1337b04rd/internal/services"
-	"1337b04rd/pkg/logger"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 )
 
@@ -28,20 +28,20 @@ func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 			respondError(w, r, "Failed to create new user session", http.StatusNotFound)
 			return
 		}
-		logger.Info("Successfuly created user")
+		slog.Info("Successfuly created user")
 		setSessionID(w, sessionID)
-		logger.Info("Successfuly set session id")
+		slog.Info("Successfuly set session id")
 	}
 
 	user, err := u.userService.FindUserByID(r.Context(), sessionID)
 	if err != nil {
-		logger.Info("Error when finding user")
+		slog.Info("Error when finding user")
 		sessionID, err = u.createUser(r)
 		if err != nil {
 			respondError(w, r, "Failed to create new user session", http.StatusNotFound)
 			return
 		}
-		logger.Info("Successfuly created user")
+		slog.Info("Successfuly created user")
 		setSessionID(w, sessionID)
 		user, err := u.userService.FindUserByID(r.Context(), sessionID)
 		if err != nil {
@@ -51,7 +51,7 @@ func (u *UserHandlers) getSessionMe(w http.ResponseWriter, r *http.Request) {
 		respondJSON(w, r, user, http.StatusOK)
 		return
 	}
-	logger.Info("Found user by session id")
+	slog.Info("Found user by session id")
 	respondJSON(w, r, user, http.StatusOK)
 }
 
@@ -67,14 +67,14 @@ func (u *UserHandlers) createUser(r *http.Request) (string, error) {
 }
 
 func (u *UserHandlers) changeUsername(w http.ResponseWriter, r *http.Request) {
-	logger.Info("Change username handler:")
+	slog.Info("Change username handler:")
 
 	sessionID, err := getSessionID(r)
 
 	var req domain.NameRequest
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		logger.Error("Error when decoding new username:", "error", err)
+		slog.Error("Error when decoding new username:", "error", err)
 		respondError(w, r, "Invalid username", http.StatusBadRequest)
 		return
 	}
@@ -83,6 +83,6 @@ func (u *UserHandlers) changeUsername(w http.ResponseWriter, r *http.Request) {
 	err = u.userService.ChangeUsername(r.Context(), sessionID, newUsername)
 
 	if err != nil {
-		logger.Error("Error when changing username:", "error", err)
+		slog.Error("Error when changing username:", "error", err)
 	}
 }

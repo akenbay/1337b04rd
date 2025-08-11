@@ -1,2 +1,0 @@
-# Netscape HTTP Cookie File
-localhost	FALSE	/	FALSE	1755212927	session_id	8d6b22cc-a819-468a-8279-e027caa53657
