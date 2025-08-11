@@ -170,7 +170,7 @@
 				.getElementById('comment-form')
 				.addEventListener('submit', async e => {
 					e.preventDefault()
-					content = document.getElementById('comment-content').value
+					const content = document.getElementById('comment-content').value
 					if (!threadId || !content.trim()) {
 						alert('Thread ID or content is missing!')
 						return
@@ -178,15 +178,11 @@
 					try {
 						const formData = new FormData()
 						formData.append('thread_id', threadId)
-						
+						formData.append('content', content)
 						const replyMatch = content.match(/\[Replying to ([^\]]+)\]/)
 						if (replyMatch) {
 							formData.append('parent_id', replyMatch[1])
 						}
-
-						content = content.replace(/\[Replying to [^\]]+\]/g, "").trim()
-						formData.append('content', content)
-
 						const imageFiles = document.getElementById('images').files
 						for (let i = 0; i < imageFiles.length; i++) {
 							formData.append('images', imageFiles[i])
