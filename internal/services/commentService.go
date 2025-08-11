@@ -1,10 +1,11 @@
 package services
 
 import (
-	"1337b04rd/internal/domain"
 	"context"
 	"fmt"
 	"log/slog"
+
+	"1337b04rd/internal/domain"
 )
 
 type CommentService struct {

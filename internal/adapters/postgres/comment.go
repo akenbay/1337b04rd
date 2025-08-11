@@ -1,10 +1,11 @@
 package postgres
 
 import (
-	"1337b04rd/internal/domain"
 	"context"
 	"database/sql"
 	"log/slog"
+
+	"1337b04rd/internal/domain"
 
 	"github.com/lib/pq"
 )

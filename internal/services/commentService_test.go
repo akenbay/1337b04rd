@@ -1,12 +1,13 @@
 package services
 
 import (
-	"1337b04rd/internal/domain"
 	"context"
 	"errors"
 	"mime/multipart"
 	"reflect"
 	"testing"
+
+	"1337b04rd/internal/domain"
 )
 
 // --------------------
