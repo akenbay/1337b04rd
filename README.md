@@ -55,7 +55,7 @@ Inspired by early internet forums and textboards, `1337b04rd` lets users create 
 2. Run the server
    ```bash
    docker-compose up
-3. With live server extension open catalog.html in wed/templates
+3. With live server extension open catalog.html in web/templates
 
 ### Learning Outcomes
 This project helped me practice:
