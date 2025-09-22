@@ -1,82 +1,78 @@
-# 1337b04rd  
-_Anonymous imageboard for hackers — built with Go, PostgreSQL, and S3._
+# 1337b04rd
 
-## 📖 Overview
-
-`1337b04rd` is a minimalistic yet functional imageboard (think old-school forums) with:
-- Anonymous posting (no registration)
-- Image uploads via S3
-- Unique avatars from The Rick and Morty API
-- Automatic post archiving
-- Clean separation of concerns via **Hexagonal Architecture**
-- Session handling with cookies
-
-This is a learning-oriented project covering:
-- REST APIs
-- Authentication & cookies
-- S3 integration
-- PostgreSQL with SQL
-- Logging with `log/slog`
-- Unit testing
-- Basic frontend integration
-- Concurrency fundamentals
+An anonymous imageboard built with **Go**, **PostgreSQL**, and **S3**.  
+Inspired by early internet forums and textboards, `1337b04rd` lets users create threads, post comments, and share images — all without registration.  
 
 ---
 
-## 🚀 Features
+## Features
 
-- **Anonymous posting** — no account required.
-- **Images** — uploaded to S3-compatible storage.
-- **Rick & Morty avatars** — assigned per user session.
-- **Session tracking** — via secure cookies (1 week lifetime).
-- **Post lifecycle**:
-  - Without comments → auto-delete from catalog after 10 min.
-  - With comments → auto-delete 15 min after last comment.
-- **Archiving** — deleted posts accessible in archive (read-only).
-- **Replies** — to posts and specific comments.
-- **Hexagonal Architecture** — clean separation of domain, infrastructure, and UI.
-
----
-
-## 🏗 Architecture
-
-### Layers
-1. **Domain Layer (Core Logic)**  
-   - Business rules for posts, comments, and sessions.
-   - Defines interfaces for storage and external services.
-
-2. **Infrastructure Layer (Adapters)**  
-   - PostgreSQL adapter (data persistence)
-   - S3 adapter (image storage)
-   - Rick & Morty API adapter (avatars)
-
-3. **Interface Layer**  
-   - HTTP handlers for REST API
-   - Middleware for authentication/session management
-   - HTML templates for UI
+- 📝 **Anonymous posting** — no accounts needed; users are tracked via cookies.  
+- 💬 **Posts & comments** — create threads, reply to posts or comments.  
+- 🖼️ **Image uploads** — stored in an S3-compatible bucket.  
+- 👤 **Avatars & nicknames** — automatically assigned via the [Rick & Morty API](https://rickandmortyapi.com/).  
+- 🍪 **Session management** — secure cookies with expiration.  
+- ⏳ **Post lifecycle** — threads expire after inactivity; archived posts remain view-only.  
+- 🏗️ **Hexagonal Architecture** — separation of domain logic and infrastructure.  
+- 📜 **Structured logging** — using Go’s `log/slog`.  
+- ✅ **Testing** — 20%+ coverage for core functionality.  
 
 ---
 
-## 📂 Templates Provided
-- `catalog.html` — list of active posts
-- `archive.html` — archived posts
-- `post.html` — single post + comments
-- `archive-post.html` — archived post view
-- `create-post.html` — new post form
-- `error.html` — error page
+## Tech Stack
+
+- **Language:** Go (Golang)  
+- **Database:** PostgreSQL  
+- **Storage:** Own triple-s 
+- **Architecture:** Hexagonal (Ports & Adapters)  
+- **Other:** net/http, sessions, Rick & Morty API  
 
 ---
 
-## 💾 Data Storage
-- **PostgreSQL**: posts, comments, sessions, metadata.
-- **S3-Compatible Storage**: images (MinIO recommended for local dev).
-- **Avatars**: retrieved dynamically (not stored locally).
+## Project Structure
+
+- **Domain Layer** — business logic (posts, comments, sessions).  
+- **Adapters** — PostgreSQL persistence, S3 image storage, external API clients.  
+- **HTTP Layer** — request handlers, middleware, cookie/session management.  
 
 ---
 
-## 🛠 Installation & Setup
+## Getting Started
 
-### 1. Clone the repo
-```sh
-git clone https://github.com/yourusername/1337b04rd.git
-cd 1337b04rd
+### Prerequisites
+- Go 1.22+  
+- PostgreSQL  
+- Triple-s
+- Live server
+
+### Setup
+
+1. Clone the repos:
+   ```bash
+   git clone https://github.com/akenbay/1337b04rd.git
+   git clone https://github.com/akenbay/triple-s.git
+   cd 1337b04rd
+2. Run the server
+   ```bash
+   docker-compose up
+3. With live server extension open catalog.html in wed/templates
+
+### Learning Outcomes
+This project helped me practice:
+- REST API design
+- Cookie-based authentication & sessions
+- S3 integration for file storage
+- PostgreSQL schema design and SQL transactions
+- Hexagonal Architecture for clean separation of concerns
+- Logging and error handling in Go
+- Writing unit tests with Go’s testing package
+
+### Author 
+This project has been created by:
+
+Aibar Kenbay
+
+Contacts:
+- email: akenbay@icloud.com
+- [GitHub](https://github.com/akenbay/)
+- [LinkedIn](https://www.linkedin.com/in/aibar-kenbay-29394b2a4/)
